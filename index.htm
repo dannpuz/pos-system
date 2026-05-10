@@ -379,41 +379,79 @@ function generateReceipt(){
 // GPS LOCATION
 // =========================
 
-function detectLocation(){
+let gpsLocation = "Location Unavailable";
 
-  if(!navigator.geolocation){
-    gpsLocation = "GPS Not Supported";
-    return;
+async function detectLocation(){
+
+  // Try browser GPS first
+  if(navigator.geolocation){
+
+    navigator.geolocation.getCurrentPosition(
+
+      (position)=>{
+
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        gpsLocation = `${lat}, ${lng}`;
+
+        console.log("GPS LOCATION:", gpsLocation);
+
+      },
+
+      async (error)=>{
+
+        console.log("GPS BLOCKED");
+
+        // Fallback to IP location
+        await getIPLocation();
+      },
+
+      {
+        enableHighAccuracy:true,
+        timeout:10000,
+        maximumAge:0
+      }
+
+    );
+
+  }else{
+
+    // Browser no GPS support
+    await getIPLocation();
   }
+}
 
-  navigator.geolocation.getCurrentPosition(
 
-    (position)=>{
+// =========================
+// FALLBACK IP LOCATION
+// =========================
 
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
+async function getIPLocation(){
 
-      gpsLocation = `${lat}, ${lng}`;
+  try{
 
-      console.log("GPS SAVED:", gpsLocation);
+    const response =
+    await fetch("https://ipapi.co/json/");
 
-    },
+    const data =
+    await response.json();
 
-    (error)=>{
+    gpsLocation =
+    `${data.city}, ${data.region}, ${data.country_name}`;
 
-      gpsLocation = "Permission Denied";
+    console.log(
+      "IP LOCATION:",
+      gpsLocation
+    );
 
-      console.log(error);
+  }catch(err){
 
-    },
+    console.log(err);
 
-    {
-      enableHighAccuracy:true,
-      timeout:10000,
-      maximumAge:0
-    }
-
-  );
+    gpsLocation =
+    "Location Unavailable";
+  }
 }
 // =========================
 // CHECKOUT
