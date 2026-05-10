@@ -103,12 +103,7 @@
         id="cell_number"
         placeholder="Cellphone Number"
       >
-
-      <div class="gps-box" id="gps_location">
-        GPS: Detecting location...
-      </div>
-
-      <button
+           <button
         class="checkout-btn"
         onclick="checkout()"
       >
@@ -386,47 +381,40 @@ function generateReceipt(){
 
 function detectLocation(){
 
-  if(navigator.geolocation){
-
-    navigator.geolocation.getCurrentPosition(
-
-      (position)=>{
-
-        const lat =
-        position.coords.latitude;
-
-        const lng =
-        position.coords.longitude;
-
-        gpsLocation =
-        `${lat}, ${lng}`;
-
-        document.getElementById(
-          "gps_location"
-        ).innerText =
-        "GPS: " + gpsLocation;
-      },
-
-      (error)=>{
-
-        document.getElementById(
-          "gps_location"
-        ).innerText =
-        "GPS Permission Denied";
-      }
-
-    );
-
-  }else{
-
-    document.getElementById(
-      "gps_location"
-    ).innerText =
-    "GPS Not Supported";
+  if(!navigator.geolocation){
+    gpsLocation = "GPS Not Supported";
+    return;
   }
+
+  navigator.geolocation.getCurrentPosition(
+
+    (position)=>{
+
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      gpsLocation = `${lat}, ${lng}`;
+
+      console.log("GPS SAVED:", gpsLocation);
+
+    },
+
+    (error)=>{
+
+      gpsLocation = "Permission Denied";
+
+      console.log(error);
+
+    },
+
+    {
+      enableHighAccuracy:true,
+      timeout:10000,
+      maximumAge:0
+    }
+
+  );
 }
-
-
 // =========================
 // CHECKOUT
 // =========================
