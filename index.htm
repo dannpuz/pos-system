@@ -263,7 +263,7 @@ if(!/^\d{11,}$/.test(phone)){
 
 /* ORDER OBJECT */
 const order = {
-  name,
+  customer_name: name,
   phone,
   gps,
   items: cart,
@@ -289,11 +289,13 @@ if(!navigator.onLine){
    SAVE CUSTOMER TO customers TABLE
 ========================================= */
 
-const customerData = {
-  name,
+
+  const customerData = {
+  customer_name: name,
   address,
   phone,
   store_name
+
 };
 
 /* UPSERT CUSTOMER */
@@ -372,7 +374,7 @@ let itemsHtml = order.items.map(i => {
 }).join("<br>");
 
 document.getElementById("receiptContent").innerHTML = `
-<b>Name:</b> ${order.name}<br>
+<b>Name:</b> ${order.customer_name}<br>
 <b>Phone:</b> ${order.phone}<br><br>
 
 <b>Items:</b><br>
