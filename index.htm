@@ -1,105 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
 <title>Ultra Fast POS</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:#0f172a;color:white}
 
-/* =========================
-BASE
-========================= */
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial;
-}
-
-body{
-  background:#0f172a;
-  color:white;
-}
-
-/* =========================
-HEADER
-========================= */
-
+/* HEADER */
 header{
-  position:sticky;
-  top:0;
+  position:sticky;top:0;z-index:10;
   background:#111827;
   padding:10px;
-  display:flex;
-  gap:10px;
-  z-index:10;
+  display:flex;gap:10px;
 }
+#search{flex:1;padding:10px;border:none;border-radius:8px}
 
-#search{
-  flex:1;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-}
-
-/* =========================
-GRID (RESPONSIVE)
-========================= */
-
+/* GRID */
 .product-grid{
   display:grid;
   gap:10px;
   padding:10px;
   grid-template-columns:repeat(5,1fr);
 }
+@media(max-width:1024px){.product-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:768px){.product-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.product-grid{grid-template-columns:repeat(2,1fr)}}
 
-@media(max-width:1024px){
-  .product-grid{grid-template-columns:repeat(4,1fr);}
-}
-
-@media(max-width:768px){
-  .product-grid{grid-template-columns:repeat(3,1fr);}
-}
-
-@media(max-width:480px){
-  .product-grid{grid-template-columns:repeat(2,1fr);}
-}
-
-/* =========================
-CARD
-========================= */
-
-.card{
-  background:white;
-  color:black;
-  border-radius:10px;
-  overflow:hidden;
-}
-
-.card img{
-  width:100%;
-  height:100px;
-  object-fit:cover;
-}
-
-.card-body{
-  padding:8px;
-}
-
-.price{
-  color:#2563eb;
-  font-weight:bold;
-}
-
-/* =========================
-BUTTON
-========================= */
-
+/* CARD */
+.card{background:white;color:black;border-radius:10px;overflow:hidden}
+.card img{width:100%;height:100px;object-fit:cover}
+.card-body{padding:8px}
+.price{color:#2563eb;font-weight:bold}
 .add-btn{
   width:100%;
   padding:8px;
@@ -110,104 +46,44 @@ BUTTON
   cursor:pointer;
 }
 
-/* =========================
-FLOAT CART BUTTON
-========================= */
-
+/* CART ICON */
 .cart-fab{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  width:60px;
-  height:60px;
+  position:fixed;bottom:20px;right:20px;
+  width:60px;height:60px;
   border-radius:50%;
   background:#2563eb;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
   z-index:1000;
-  cursor:pointer;
 }
 
-/* =========================
-CART PANEL
-========================= */
-
+/* CART PANEL */
 .cart{
-  position:fixed;
-  right:0;
-  top:0;
-  width:320px;
-  height:100vh;
+  position:fixed;right:0;top:0;
+  width:320px;height:100vh;
   background:#111827;
   padding:10px;
   overflow:auto;
-  z-index:999;
-  display:none;
 }
 
-/* =========================
-CART ITEM
-========================= */
-
-.cart-item{
+/* CART ITEM */
+.item{
   background:#1f2937;
   padding:8px;
   margin-bottom:8px;
   border-radius:8px;
 }
+.qty{display:flex;gap:8px;align-items:center;margin-top:5px}
+.qty button{padding:4px 10px;border:none;border-radius:5px}
 
-.qty{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  margin-top:5px;
-}
-
-.qty button{
-  padding:5px 10px;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-}
-
-/* =========================
-CHECKOUT
-========================= */
-
-.checkout{
-  margin-top:10px;
-  padding:10px;
-  background:#0b1220;
-  border-radius:10px;
-}
-
-.checkout input{
+/* CHECKOUT */
+input{
   width:100%;
   padding:10px;
-  margin-bottom:8px;
+  margin-top:5px;
   border:none;
   border-radius:6px;
 }
-
-/* =========================
-SKELETON LOADING
-========================= */
-
-.skeleton{
-  background:linear-gradient(90deg,#1f2937 25%,#374151 37%,#1f2937 63%);
-  background-size:400% 100%;
-  animation:shimmer 1.2s infinite;
-  border-radius:10px;
-  height:140px;
-}
-
-@keyframes shimmer{
-  0%{background-position:100% 0}
-  100%{background-position:-100% 0}
-}
-
 </style>
 </head>
 
@@ -217,252 +93,161 @@ SKELETON LOADING
 <input id="search" placeholder="Search product...">
 </header>
 
-<!-- PRODUCTS -->
 <div id="products" class="product-grid"></div>
 
-<!-- CART BUTTON -->
-<div class="cart-fab" onclick="toggleCart()">
-🛒 <span id="count">0</span>
-</div>
+<div class="cart-fab" id="cartBtn">🛒 <span id="count">0</span></div>
 
-<!-- CART PANEL -->
-<div class="cart" id="cartPanel">
-
+<div class="cart" id="cartPanel" style="display:none;">
 <h3>Cart</h3>
 <div id="cart"></div>
 
-<div class="checkout">
-<input id="name" placeholder="Customer Name">
+<input id="name" placeholder="Name">
 <input id="address" placeholder="Address">
 <input id="phone" placeholder="Phone">
 
-<div id="gps">GPS: detecting...</div>
-
-<button onclick="checkout()" class="add-btn">
-Checkout
-</button>
-
-</div>
-
+<button onclick="checkout()" class="add-btn">Checkout</button>
 </div>
 
 <script>
-
-/* =========================
-SUPABASE
-========================= */
 
 const supabaseClient = supabase.createClient(
 "https://gwqnvhbzvzfzryxxdmui.supabase.co",
 "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
 );
 
-/* =========================
-STATE
-========================= */
+/* STATE */
+let products = [];
+let cart = [];
+let gps = "Unavailable";
 
-let state = {
-products: [],
-cart: []
-};
-
-/* =========================
-SKELETON
-========================= */
-
-function showSkeleton(){
-const box = document.getElementById("products");
-box.innerHTML = "";
-
-for(let i=0;i<10;i++){
-const div = document.createElement("div");
-div.className = "skeleton";
-box.appendChild(div);
-}
+/* LOAD PRODUCTS (FAST) */
+async function loadProducts(){
+  const {data} = await supabaseClient.from("products").select("*");
+  products = data || [];
+  renderProducts();
 }
 
-/* =========================
-LOAD PRODUCTS
-========================= */
-
-async function load(){
-
-showSkeleton();
-
-const { data } =
-await supabaseClient
-.from("products")
-.select("*");
-
-state.products = data || [];
-render();
-}
-
-load();
-
-/* =========================
-RENDER
-========================= */
-
-function render(){
-renderProducts();
-renderCart();
-}
-
-/* =========================
-PRODUCTS
-========================= */
-
+/* FAST PRODUCT RENDER (NO innerHTML LOOP) */
 function renderProducts(){
+  const box = document.getElementById("products");
+  box.textContent = "";
 
-const box = document.getElementById("products");
-box.innerHTML = "";
+  const frag = document.createDocumentFragment();
 
-state.products.forEach(p=>{
+  products.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <img src="${p.image_url}">
+      <div class="card-body">
+        <h4>${p.name}</h4>
+        <p class="price">₱${p.price}</p>
+        <button class="add-btn" data-id="${p.id}">Add</button>
+      </div>
+    `;
+    frag.appendChild(div);
+  });
 
-box.innerHTML += `
-<div class="card">
-<img src="${p.image_url}">
-<div class="card-body">
-<h4>${p.name}</h4>
-<p class="price">₱${p.price}</p>
-<button class="add-btn" onclick="add(${p.id})">
-Add
-</button>
-</div>
-</div>
-`;
+  box.appendChild(frag);
+}
 
+/* EVENT DELEGATION (VERY FAST) */
+document.getElementById("products")
+.addEventListener("click",(e)=>{
+  if(!e.target.classList.contains("add-btn")) return;
+
+  const id = Number(e.target.dataset.id);
+  const p = products.find(x=>x.id===id);
+
+  const f = cart.find(i=>i.id===id);
+  if(f) f.qty++;
+  else cart.push({...p,qty:1});
+
+  renderCart();
 });
 
-}
-
-/* =========================
-ADD TO CART
-========================= */
-
-function add(id){
-
-const p = state.products.find(x=>x.id===id);
-const c = [...state.cart];
-
-const f = c.find(i=>i.id===id);
-
-if(f) f.qty++;
-else c.push({...p, qty:1});
-
-state.cart = c;
-render();
-}
-
-/* =========================
-CART RENDER
-========================= */
-
+/* CART RENDER (FAST STRING BUILD ONLY ON CART) */
 function renderCart(){
+  const box = document.getElementById("cart");
 
-const box = document.getElementById("cart");
+  let html = "";
+  let count = 0;
 
-let html = "";
-let total = 0;
-let count = 0;
+  cart.forEach((i,idx)=>{
+    count += i.qty;
 
-state.cart.forEach((i,index)=>{
+    html += `
+      <div class="item">
+        <b>${i.name}</b><br>
+        ₱${i.price}
 
-total += i.price*i.qty;
-count += i.qty;
+        <div class="qty">
+          <button onclick="minus(${idx})">-</button>
+          <span>${i.qty}</span>
+          <button onclick="plus(${idx})">+</button>
+        </div>
+      </div>
+    `;
+  });
 
-html += `
-<div class="cart-item">
-<b>${i.name}</b>
-<p>₱${i.price}</p>
-
-<div class="qty">
-<button onclick="minus(${index})">-</button>
-<span>${i.qty}</span>
-<button onclick="plus(${index})">+</button>
-</div>
-</div>
-`;
-
-});
-
-document.getElementById("count").innerText = count;
-box.innerHTML = html + `<h3>Total ₱${total}</h3>`;
+  box.innerHTML = html;
+  document.getElementById("count").innerText = count;
 }
 
-/* =========================
-QTY
-========================= */
-
+/* QTY */
 function minus(i){
-state.cart[i].qty--;
-if(state.cart[i].qty<=0) state.cart.splice(i,1);
-render();
+  cart[i].qty--;
+  if(cart[i].qty<=0) cart.splice(i,1);
+  renderCart();
 }
 
 function plus(i){
-state.cart[i].qty++;
-render();
+  cart[i].qty++;
+  renderCart();
 }
 
-/* =========================
-TOGGLE CART
-========================= */
+/* CART TOGGLE */
+document.getElementById("cartBtn").onclick = ()=>{
+  const c = document.getElementById("cartPanel");
+  c.style.display = c.style.display==="block"?"none":"block";
+};
 
-function toggleCart(){
-const el = document.getElementById("cartPanel");
-el.style.display = el.style.display==="block"?"none":"block";
-}
-
-/* =========================
-GPS
-========================= */
-
-let gpsText="";
-
+/* GPS (SAFE) */
 navigator.geolocation?.getCurrentPosition(
 pos=>{
-gpsText = `${pos.coords.latitude},${pos.coords.longitude}`;
-document.getElementById("gps").innerText = gpsText;
+  gps = `${pos.coords.latitude},${pos.coords.longitude}`;
 },
-()=>{
-gpsText="Unavailable";
-document.getElementById("gps").innerText="GPS Unavailable";
-}
+()=> gps="Unavailable"
 );
 
-/* =========================
-CHECKOUT
-========================= */
-
+/* CHECKOUT */
 async function checkout(){
 
-if(state.cart.length===0) return alert("Empty cart");
+if(cart.length===0) return alert("Empty cart");
 
 const order = {
 name:document.getElementById("name").value,
 address:document.getElementById("address").value,
 phone:document.getElementById("phone").value,
-gps:gpsText,
-items:state.cart,
+gps,
+items:cart,
 status:"pending"
 };
 
 if(!navigator.onLine){
-localStorage.setItem("queue",
-JSON.stringify([...JSON.parse(localStorage.getItem("queue")||"[]"),order])
-);
+localStorage.setItem("queue",JSON.stringify([...JSON.parse(localStorage.getItem("queue")||"[]"),order]));
 return alert("Saved offline");
 }
 
 await supabaseClient.from("orders").insert([order]);
 
-state.cart=[];
-render();
+cart = [];
+renderCart();
 }
 
-</script>
+/* INIT */
+loadProducts();
 
+</script>
 </body>
 </html>
