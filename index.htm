@@ -161,7 +161,7 @@ function renderProducts(){
     div.innerHTML = `
       <img src="${p.image_url}">
       <div class="card-body">
-        <h4>${p.customer_name}</h4>
+        <h4>${p.name}</h4>
         <p class="price">₱${p.price}</p>
         <button class="add-btn" data-id="${p.id}">Add</button>
       </div>
@@ -254,18 +254,18 @@ const phone = document.getElementById("cell_number").value.trim();
 const store_name = document.getElementById("store_name").value.trim();
 
 /* VALIDATION */
-if(!customer_name || !address || !cell_number || !store_name){
+if(!name || !address || !phone || !store_name){
   return alert("Complete all customer details");
 }
 
-if(!/^\d{11,}$/.test(cell_number)){
-  return alert("Phone number must be at least 11 digits");
-}
+if(!/^\d{11}$/.test(phone)){
+  return alert("Phone number must be exactly 11 digits");
+}}
 
 /* ORDER OBJECT */
 const order = {
   customer_name: name,
-  cell_number,
+  cell_number: phone,
   gps,
   items: cart,
   status: "pending",
@@ -291,12 +291,11 @@ if(!navigator.onLine){
 ========================================= */
 
 
-  const customerData = {
+ const customerData = {
   customer_name: name,
   address,
-  cell_number,
+  cell_number: phone,
   store_name
-
 };
 
 /* UPSERT CUSTOMER */
@@ -356,7 +355,7 @@ document.getElementById("customer_name").value = "";
 ocument.getElementById("store_name").value = "";
 document.getElementById("address").value = "";
 document.getElementById("cell_number").value = "";
-d
+
 
 }
 function showReceipt(order){
