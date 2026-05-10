@@ -2,8 +2,8 @@ const SUPABASE_URL = "https://gwqnvhbzvzfzryxxdmui.supabase.co";
 const SUPABASE_KEY = "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw";
 
 const supabaseClient = supabase.createClient(
-  https://gwqnvhbzvzfzryxxdmui.supabase.co,
-  sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw);
+  SUPABASE_URL
+  SUPABASE_KEY
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
