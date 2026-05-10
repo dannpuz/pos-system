@@ -283,7 +283,8 @@ const {data, error} = await supabaseClient
 
 if(error){
   console.error(error);
-  return alert("Order failed to save");
+ console.error("SUPABASE ERROR:", error);
+alert(error.message);
 }
 
 /* -------------------------
