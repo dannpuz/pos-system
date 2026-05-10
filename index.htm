@@ -1,30 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
   <title>POS System</title>
 
-  <link rel="stylesheet" href="style.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
 
-    .checkout-form{
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial;
+    }
+
+    body{
+      background:#f3f4f6;
+      color:#111827;
+    }
+
+    header{
       background:#111827;
-      padding:20px;
+      color:white;
+      padding:15px;
+      position:sticky;
+      top:0;
+      z-index:1000;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    header h1{
+      font-size:18px;
+      white-space:nowrap;
+    }
+
+    #search{
+      flex:1;
+      padding:10px;
+      border:none;
+      border-radius:10px;
+    }
+
+    .cart-icon{
+      background:#3b82f6;
+      width:50px;
+      height:50px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      position:relative;
+      font-size:22px;
+    }
+
+    #cart-count{
+      position:absolute;
+      top:-5px;
+      right:-5px;
+      background:red;
+      color:white;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+    }
+
+    .container{
+      display:flex;
+    }
+
+    .product-grid{
+      flex:1;
+      display:grid;
+      grid-template-columns:
+      repeat(auto-fill,minmax(180px,1fr));
+      gap:15px;
+      padding:15px;
+    }
+
+    .card{
+      background:white;
       border-radius:15px;
+      overflow:hidden;
+      box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .card img{
+      width:100%;
+      height:150px;
+      object-fit:cover;
+    }
+
+    .card-body{
+      padding:10px;
+    }
+
+    .card h3{
+      font-size:16px;
+      margin-bottom:8px;
+    }
+
+    .price{
+      color:#2563eb;
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+
+    .add-btn{
+      width:100%;
+      padding:10px;
+      border:none;
+      border-radius:10px;
+      background:#2563eb;
+      color:white;
+      cursor:pointer;
+    }
+
+    .cart{
+      width:350px;
+      background:#111827;
+      color:white;
+      height:100vh;
+      overflow:auto;
+      padding:20px;
+      position:sticky;
+      top:0;
+    }
+
+    .hidden{
+      display:none;
+    }
+
+    .cart-header{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:20px;
+    }
+
+    .cart-item{
+      border-bottom:1px solid #374151;
+      padding-bottom:10px;
+      margin-bottom:10px;
+    }
+
+    .qty-controls{
+      display:flex;
+      gap:5px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+
+    .qty-controls button{
+      padding:6px 10px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    .checkout-form{
       margin-top:20px;
     }
 
     .checkout-form input{
       width:100%;
       padding:12px;
-      margin-bottom:12px;
       border:none;
       border-radius:10px;
+      margin-bottom:10px;
     }
 
     .gps-box{
@@ -32,35 +187,83 @@
       padding:10px;
       border-radius:10px;
       margin-bottom:10px;
-      font-size:14px;
+      font-size:13px;
+    }
+
+    .checkout-btn{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:10px;
+      background:#10b981;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    @media(max-width:768px){
+
+      .container{
+        flex-direction:column;
+      }
+
+      .product-grid{
+        grid-template-columns:
+        repeat(2,1fr);
+      }
+
+      .card img{
+        height:120px;
+      }
+
+      .card h3{
+        font-size:14px;
+      }
+
+      .cart{
+        width:100%;
+        height:auto;
+      }
+
     }
 
   </style>
 
 </head>
+
 <body>
 
 <header>
 
-  <h1>CUSTOMERS ORDER FORM</h1>
+  <h1>ORDER FORM</h1>
 
   <input
     type="text"
     id="search"
-    placeholder="Search item..."
+    placeholder="Search product..."
   >
 
-  <div class="cart-icon" onclick="toggleCart()">
-    🛒 <span id="cart-count">0</span>
+  <div
+    class="cart-icon"
+    onclick="toggleCart()"
+  >
+    🛒
+    <span id="cart-count">0</span>
   </div>
 
 </header>
 
 <div class="container">
 
-  <div id="products" class="product-grid"></div>
+  <div
+    id="products"
+    class="product-grid"
+  ></div>
 
-  <div class="cart hidden" id="cart">
+  <div
+    class="cart hidden"
+    id="cart"
+  >
 
     <div class="cart-header">
 
@@ -83,7 +286,7 @@
       <input
         type="text"
         id="customer_name"
-        placeholder="Name of Customer"
+        placeholder="Customer Name"
       >
 
       <input
@@ -104,7 +307,10 @@
         placeholder="Cellphone Number"
       >
 
-      <div class="gps-box" id="gps_location">
+      <div
+        class="gps-box"
+        id="gps_location"
+      >
         GPS: Detecting location...
       </div>
 
@@ -121,7 +327,10 @@
 
 </div>
 
-<audio id="addSound" src="sounds/add.mp3"></audio>
+<audio
+  id="addSound"
+  src="sounds/add.mp3"
+></audio>
 
 <script>
 
@@ -129,59 +338,90 @@ const SUPABASE_URL =
 "https://gwqnvhbzvzfzryxxdmui.supabase.co";
 
 const SUPABASE_KEY =
-"sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw";
+"YOUR_REAL_SUPABASE_ANON_KEY";
 
-const supabaseClient = supabase.createClient(
+const supabaseClient =
+supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
 
-let cart =
-JSON.parse(localStorage.getItem("cart")) || [];
-
-let gpsLocation = "Unavailable";
-
 const productsDiv =
 document.getElementById("products");
 
+let cart =
+JSON.parse(localStorage.getItem("cart")) || [];
 
-// =========================
+let latitude = "";
+let longitude = "";
+let gpsLocation = "Unavailable";
+let googleMapLink = "";
+
+
+// ======================
 // LOAD PRODUCTS
-// =========================
+// ======================
 
 async function loadProducts(){
 
-  const { data, error } =
-  await supabaseClient
-    .from("products")
-    .select("*");
+  try{
 
-  if(error){
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("products")
+      .select("*")
+      .order("id",{ascending:false});
 
-    console.log(error);
+    if(error){
 
-    return;
+      console.log(error);
+
+      productsDiv.innerHTML =
+      "<h2>Failed to load products</h2>";
+
+      return;
+    }
+
+    displayProducts(data);
+
+  }catch(err){
+
+    console.log(err);
+
+    productsDiv.innerHTML =
+    "<h2>Error loading products</h2>";
   }
-
-  displayProducts(data);
 }
 
 
-// =========================
+// ======================
 // DISPLAY PRODUCTS
-// =========================
+// ======================
 
 function displayProducts(products){
 
   productsDiv.innerHTML = "";
 
-  products.forEach(product => {
+  if(products.length === 0){
+
+    productsDiv.innerHTML =
+    "<h2>No products found</h2>";
+
+    return;
+  }
+
+  products.forEach(product=>{
 
     productsDiv.innerHTML += `
 
       <div class="card">
 
-        <img src="${product.image_url}" />
+        <img
+          src="${product.image_url}"
+          onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'"
+        >
 
         <div class="card-body">
 
@@ -191,16 +431,18 @@ function displayProducts(products){
             ₱${product.price}
           </p>
 
-        <button        
-class="add-btn"
-onclick='addToCart(
-${product.id},
-${JSON.stringify(product.name)},
-${product.price},
-${JSON.stringify(product.image_url)}
-)'>
-🛒 Add to Cart
-</button>
+          <button
+            class="add-btn"
+            onclick='addToCart(
+              ${product.id},
+              ${JSON.stringify(product.name)},
+              ${product.price},
+              ${JSON.stringify(product.image_url)}
+            )'
+          >
+            Add To Cart
+          </button>
+
         </div>
 
       </div>
@@ -210,9 +452,9 @@ ${JSON.stringify(product.image_url)}
 }
 
 
-// =========================
+// ======================
 // ADD TO CART
-// =========================
+// ======================
 
 function addToCart(
   id,
@@ -221,10 +463,15 @@ function addToCart(
   image_url
 ){
 
-  document.getElementById("addSound").play();
+  const sound =
+  document.getElementById("addSound");
+
+  if(sound){
+    sound.play();
+  }
 
   const existing =
-  cart.find(item => item.id === id);
+  cart.find(item=>item.id===id);
 
   if(existing){
 
@@ -247,9 +494,9 @@ function addToCart(
 }
 
 
-// =========================
+// ======================
 // SAVE CART
-// =========================
+// ======================
 
 function saveCart(){
 
@@ -260,9 +507,9 @@ function saveCart(){
 }
 
 
-// =========================
+// ======================
 // RENDER CART
-// =========================
+// ======================
 
 function renderCart(){
 
@@ -322,9 +569,9 @@ function renderCart(){
 }
 
 
-// =========================
+// ======================
 // CHANGE QTY
-// =========================
+// ======================
 
 function changeQty(index,change){
 
@@ -341,9 +588,9 @@ function changeQty(index,change){
 }
 
 
-// =========================
+// ======================
 // REMOVE ITEM
-// =========================
+// ======================
 
 function removeItem(index){
 
@@ -355,9 +602,9 @@ function removeItem(index){
 }
 
 
-// =========================
+// ======================
 // TOGGLE CART
-// =========================
+// ======================
 
 function toggleCart(){
 
@@ -366,9 +613,9 @@ function toggleCart(){
 }
 
 
-// =========================
+// ======================
 // RECEIPT
-// =========================
+// ======================
 
 function generateReceipt(){
 
@@ -376,193 +623,74 @@ function generateReceipt(){
 }
 
 
-// =========================
-// GPS VARIABLES
-// =========================
-
-let latitude = "";
-let longitude = "";
-
-let gpsLocation = "Unavailable";
-
-let googleMapLink = "";
-
-
-// =========================
-// DETECT LOCATION
-// =========================
+// ======================
+// GPS DETECT
+// ======================
 
 async function detectLocation(){
 
-  return new Promise((resolve)=>{
+  const gpsBox =
+  document.getElementById("gps_location");
 
-    const gpsBox =
-    document.getElementById(
-      "gps_location"
-    );
+  if(!navigator.geolocation){
 
     gpsBox.innerHTML =
-    "GPS: Detecting location...";
+    "GPS Not Supported";
 
-    // =====================
-    // REAL GPS
-    // =====================
+    return;
+  }
 
-    if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(
 
-      navigator.geolocation.getCurrentPosition(
+    async(position)=>{
 
-        async(position)=>{
+      latitude =
+      position.coords.latitude;
 
-          latitude =
-          position.coords.latitude;
-
-          longitude =
-          position.coords.longitude;
-
-          gpsLocation =
-          `${latitude}, ${longitude}`;
-
-          // GOOGLE MAP LINK
-
-          googleMapLink =
-          `https://www.google.com/maps?q=${latitude},${longitude}`;
-
-          // GET READABLE ADDRESS
-
-          try{
-
-            const response =
-            await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-            );
-
-            const data =
-            await response.json();
-
-            if(data.display_name){
-
-              gpsLocation =
-              data.display_name;
-            }
-
-          }catch(err){
-
-            console.log(err);
-          }
-
-          gpsBox.innerHTML =
-          `
-          GPS Captured Successfully
-          <br><br>
-
-          <a
-            href="${googleMapLink}"
-            target="_blank"
-            style="
-              color:yellow;
-              font-weight:bold;
-            "
-          >
-            Open Google Maps
-          </a>
-          `;
-
-          console.log(
-            gpsLocation
-          );
-
-          resolve();
-        },
-
-        async(error)=>{
-
-          console.log(
-            "GPS BLOCKED"
-          );
-
-          // =====================
-          // FALLBACK TO IP
-          // =====================
-
-          try{
-
-            const response =
-            await fetch(
-              "https://ipapi.co/json/"
-            );
-
-            const data =
-            await response.json();
-
-            latitude =
-            data.latitude;
-
-            longitude =
-            data.longitude;
-
-            gpsLocation =
-            `${data.city},
-             ${data.region},
-             ${data.country_name}`;
-
-            googleMapLink =
-            `https://www.google.com/maps?q=${latitude},${longitude}`;
-
-            gpsBox.innerHTML =
-            `
-            Approximate Location
-            <br><br>
-
-            <a
-              href="${googleMapLink}"
-              target="_blank"
-              style="
-                color:yellow;
-                font-weight:bold;
-              "
-            >
-              Open Google Maps
-            </a>
-            `;
-
-          }catch(err){
-
-            gpsLocation =
-            "Unavailable";
-
-            gpsBox.innerHTML =
-            "Location Unavailable";
-          }
-
-          resolve();
-        },
-
-        {
-          enableHighAccuracy:true,
-          timeout:15000,
-          maximumAge:0
-        }
-      );
-
-    }else{
+      longitude =
+      position.coords.longitude;
 
       gpsLocation =
-      "GPS Not Supported";
+      `${latitude}, ${longitude}`;
+
+      googleMapLink =
+      `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+      gpsBox.innerHTML = `
+        GPS Captured<br><br>
+        <a
+          href="${googleMapLink}"
+          target="_blank"
+          style="color:yellow;"
+        >
+          Open Google Maps
+        </a>
+      `;
+    },
+
+    (error)=>{
 
       gpsBox.innerHTML =
-      "GPS Not Supported";
+      "GPS Permission Denied";
 
-      resolve();
+      console.log(error);
+    },
+
+    {
+      enableHighAccuracy:true,
+      timeout:10000
     }
-  });
+
+  );
 }
-// =========================
+
+
+// ======================
 // CHECKOUT
-// =========================
+// ======================
 
 async function checkout(){
-await detectLocation();
+
   if(cart.length === 0){
 
     alert("Cart is empty");
@@ -602,30 +730,22 @@ await detectLocation();
     return;
   }
 
-  // =====================
-  // SAVE CUSTOMER
-  // =====================
-
   const customerResult =
-await supabaseClient
-  .from("customers")
-  .insert([{
+  await supabaseClient
+    .from("customers")
+    .insert([{
 
-    customer_name,
-    store_name,
-    address,
-    cell_number,
+      customer_name,
+      store_name,
+      address,
+      cell_number,
+      gps_location:gpsLocation,
+      latitude,
+      longitude,
+      google_map:googleMapLink
 
-    gps_location:gpsLocation,
+    }]);
 
-    latitude:latitude,
-
-    longitude:longitude,
-
-    google_map:googleMapLink
-
-  }]);
-  
   if(customerResult.error){
 
     console.log(customerResult.error);
@@ -640,10 +760,6 @@ await supabaseClient
 
   let grandTotal = 0;
 
-  // =====================
-  // SAVE SALES
-  // =====================
-
   for(const item of cart){
 
     const total =
@@ -651,7 +767,6 @@ await supabaseClient
 
     grandTotal += total;
 
-    const saleResult =
     await supabaseClient
       .from("sales")
       .insert([{
@@ -660,19 +775,10 @@ await supabaseClient
         products:item.name,
         qty:item.qty,
         price:item.price,
-        total:total,
+        total,
         customers:customer_name
 
       }]);
-
-    if(saleResult.error){
-
-      console.log(saleResult.error);
-
-      alert("Failed to save sales");
-
-      return;
-    }
   }
 
   alert(
@@ -693,9 +799,9 @@ Total:
 }
 
 
-// =========================
+// ======================
 // SEARCH
-// =========================
+// ======================
 
 document.getElementById("search")
 .addEventListener("input",(e)=>{
@@ -719,9 +825,9 @@ document.getElementById("search")
 });
 
 
-// =========================
+// ======================
 // START
-// =========================
+// ======================
 
 detectLocation();
 
