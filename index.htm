@@ -48,14 +48,26 @@ header{
 }
 
 /* =========================
-GRID
+GRID (RESPONSIVE)
 ========================= */
 
 .product-grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
   gap:10px;
   padding:10px;
+  grid-template-columns:repeat(5,1fr);
+}
+
+@media(max-width:1024px){
+  .product-grid{grid-template-columns:repeat(4,1fr);}
+}
+
+@media(max-width:768px){
+  .product-grid{grid-template-columns:repeat(3,1fr);}
+}
+
+@media(max-width:480px){
+  .product-grid{grid-template-columns:repeat(2,1fr);}
 }
 
 /* =========================
@@ -99,7 +111,7 @@ BUTTON
 }
 
 /* =========================
-FLOAT CART ICON (FIXED)
+FLOAT CART BUTTON
 ========================= */
 
 .cart-fab{
@@ -116,7 +128,6 @@ FLOAT CART ICON (FIXED)
   font-size:22px;
   z-index:1000;
   cursor:pointer;
-  box-shadow:0 5px 15px rgba(0,0,0,0.4);
 }
 
 /* =========================
@@ -133,10 +144,11 @@ CART PANEL
   padding:10px;
   overflow:auto;
   z-index:999;
+  display:none;
 }
 
 /* =========================
-CART ITEMS
+CART ITEM
 ========================= */
 
 .cart-item{
@@ -161,7 +173,7 @@ CART ITEMS
 }
 
 /* =========================
-CHECKOUT PANEL (FIX MOBILE)
+CHECKOUT
 ========================= */
 
 .checkout{
@@ -180,42 +192,26 @@ CHECKOUT PANEL (FIX MOBILE)
 }
 
 /* =========================
-OFFLINE
+SKELETON LOADING
 ========================= */
 
-.offline{
-  background:red;
-  text-align:center;
-  font-size:12px;
-  padding:5px;
-  display:none;
+.skeleton{
+  background:linear-gradient(90deg,#1f2937 25%,#374151 37%,#1f2937 63%);
+  background-size:400% 100%;
+  animation:shimmer 1.2s infinite;
+  border-radius:10px;
+  height:140px;
 }
 
-/* =========================
-MOBILE FIX
-========================= */
-
-@media(max-width:768px){
-  .product-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
-
-  .cart{
-    width:100%;
-    height:60%;
-    bottom:0;
-    top:auto;
-    border-top-left-radius:15px;
-    border-top-right-radius:15px;
-  }
+@keyframes shimmer{
+  0%{background-position:100% 0}
+  100%{background-position:-100% 0}
 }
 
 </style>
 </head>
 
 <body>
-
-<div id="offline" class="offline">OFFLINE MODE</div>
 
 <header>
 <input id="search" placeholder="Search product...">
@@ -224,18 +220,18 @@ MOBILE FIX
 <!-- PRODUCTS -->
 <div id="products" class="product-grid"></div>
 
-<!-- FLOAT CART ICON -->
-<div class="cart-fab" onclick="toggleCart()">🛒 <span id="count">0</span></div>
+<!-- CART BUTTON -->
+<div class="cart-fab" onclick="toggleCart()">
+🛒 <span id="count">0</span>
+</div>
 
 <!-- CART PANEL -->
-<div class="cart" id="cartPanel" style="display:none;">
+<div class="cart" id="cartPanel">
 
 <h3>Cart</h3>
 <div id="cart"></div>
 
-<!-- CUSTOMER INFO -->
 <div class="checkout">
-
 <input id="name" placeholder="Customer Name">
 <input id="address" placeholder="Address">
 <input id="phone" placeholder="Phone">
@@ -271,10 +267,27 @@ cart: []
 };
 
 /* =========================
+SKELETON
+========================= */
+
+function showSkeleton(){
+const box = document.getElementById("products");
+box.innerHTML = "";
+
+for(let i=0;i<10;i++){
+const div = document.createElement("div");
+div.className = "skeleton";
+box.appendChild(div);
+}
+}
+
+/* =========================
 LOAD PRODUCTS
 ========================= */
 
 async function load(){
+
+showSkeleton();
 
 const { data } =
 await supabaseClient
@@ -303,7 +316,6 @@ PRODUCTS
 function renderProducts(){
 
 const box = document.getElementById("products");
-
 box.innerHTML = "";
 
 state.products.forEach(p=>{
@@ -322,16 +334,16 @@ Add
 `;
 
 });
+
 }
 
 /* =========================
-ADD CART
+ADD TO CART
 ========================= */
 
 function add(id){
 
 const p = state.products.find(x=>x.id===id);
-
 const c = [...state.cart];
 
 const f = c.find(i=>i.id===id);
@@ -340,7 +352,6 @@ if(f) f.qty++;
 else c.push({...p, qty:1});
 
 state.cart = c;
-
 render();
 }
 
@@ -377,7 +388,6 @@ html += `
 });
 
 document.getElementById("count").innerText = count;
-
 box.innerHTML = html + `<h3>Total ₱${total}</h3>`;
 }
 
@@ -401,9 +411,8 @@ TOGGLE CART
 ========================= */
 
 function toggleCart(){
-
 const el = document.getElementById("cartPanel");
-el.style.display = el.style.display==="none"?"block":"none";
+el.style.display = el.style.display==="block"?"none":"block";
 }
 
 /* =========================
