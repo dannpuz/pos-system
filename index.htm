@@ -4,15 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>Smart POS System</title>
+<title>Ultra Fast POS</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-
-/* ======================
-GLOBAL
-====================== */
 
 *{
   margin:0;
@@ -26,35 +22,15 @@ body{
   color:white;
 }
 
-/* ======================
-LAYOUT MODES
-====================== */
-
-body.mobile .product-grid{
-  grid-template-columns:repeat(2,1fr);
-}
-
-body.desktop .product-grid{
-  grid-template-columns:repeat(3,1fr);
-}
-
-/* ======================
-HEADER
-====================== */
+/* HEADER */
 
 header{
   position:sticky;
   top:0;
-  z-index:1000;
   background:#111827;
-  padding:12px;
+  padding:10px;
   display:flex;
   gap:10px;
-  align-items:center;
-}
-
-header h1{
-  font-size:16px;
 }
 
 #search{
@@ -64,15 +40,16 @@ header h1{
   border-radius:8px;
 }
 
-/* ======================
-PRODUCTS
-====================== */
+/* GRID */
 
 .product-grid{
   display:grid;
+  grid-template-columns:repeat(2,1fr);
   gap:10px;
   padding:10px;
 }
+
+/* CARD */
 
 .card{
   background:white;
@@ -96,6 +73,8 @@ PRODUCTS
   font-weight:bold;
 }
 
+/* BUTTON */
+
 .add-btn{
   width:100%;
   padding:8px;
@@ -103,89 +82,30 @@ PRODUCTS
   background:#3b82f6;
   color:white;
   border-radius:8px;
-  margin-top:8px;
+  cursor:pointer;
 }
 
-/* ======================
-CART (DESKTOP)
-====================== */
+/* CART */
 
 .cart{
   position:fixed;
   right:0;
   top:0;
-  width:350px;
+  width:320px;
   height:100vh;
   background:#111827;
-  padding:15px;
+  padding:10px;
   overflow:auto;
-  display:none;
 }
 
-body.desktop .cart{
-  display:block;
-}
-
-.cart-item{
-  background:#1f2937;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:10px;
-}
-
-/* ======================
-MOBILE CART BUTTON
-====================== */
-
-.mobile-cart-btn{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  background:#3b82f6;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  font-size:24px;
-  z-index:9999;
-}
-
-body.mobile .mobile-cart-btn{
-  display:flex;
-}
-
-/* ======================
-CHECKOUT FORM
-====================== */
-
-input{
-  width:100%;
-  padding:10px;
-  margin-bottom:8px;
-  border:none;
-  border-radius:8px;
-}
-
-.checkout-btn{
-  width:100%;
-  padding:12px;
-  background:#10b981;
-  border:none;
-  border-radius:8px;
-  color:white;
-}
-
-/* ======================
-OFFLINE STATUS
-====================== */
+/* OFFLINE */
 
 .offline{
   background:red;
-  padding:5px;
   text-align:center;
   font-size:12px;
+  padding:5px;
+  display:none;
 }
 
 </style>
@@ -193,281 +113,274 @@ OFFLINE STATUS
 
 <body>
 
-<div id="status" class="offline" style="display:none;">
-OFFLINE MODE ACTIVE
+<div id="offline" class="offline">
+OFFLINE MODE
 </div>
 
 <header>
-<h1>SMART POS</h1>
 <input id="search" placeholder="Search product...">
 </header>
 
 <div id="products" class="product-grid"></div>
 
-<div class="cart" id="cart"></div>
+<div class="cart">
+<h3>Cart</h3>
+<div id="cart"></div>
 
-<div class="mobile-cart-btn" onclick="toggleCart()">
-🛒 <span id="count">0</span>
+<input id="name" placeholder="Name">
+<input id="address" placeholder="Address">
+
+<button onclick="checkout()">
+Checkout
+</button>
+
 </div>
 
 <script>
 
-/* ======================
+/* =========================
 SUPABASE
-====================== */
+========================= */
 
 const supabaseClient = supabase.createClient(
 "https://gwqnvhbzvzfzryxxdmui.supabase.co",
 "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
 );
 
-/* ======================
-DEVICE DETECTION
-====================== */
+/* =========================
+STATE (React-style)
+========================= */
 
-function detectDevice(){
+let state = {
+products: [],
+cart: [],
+queue: []
+};
 
-  if(/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)){
-    document.body.classList.add("mobile");
-  }else{
-    document.body.classList.add("desktop");
-  }
+/* =========================
+SET STATE (FAST RENDER)
+========================= */
+
+function setState(newState){
+
+state = {...state, ...newState};
+
+render();
 }
 
-detectDevice();
+/* =========================
+INITIAL LOAD
+========================= */
 
-/* ======================
-STATE
-====================== */
+async function load(){
 
-let cart =
-JSON.parse(localStorage.getItem("cart")) || [];
+const { data } =
+await supabaseClient
+.from("products")
+.select("*");
 
-let offlineQueue =
-JSON.parse(localStorage.getItem("queue")) || [];
-
-/* ======================
-LOAD PRODUCTS
-====================== */
-
-async function loadProducts(){
-
-  const { data, error } =
-  await supabaseClient
-  .from("products")
-  .select("*");
-
-  if(error){
-    console.log(error);
-    return;
-  }
-
-  renderProducts(data);
+setState({ products:data });
 }
 
-/* ======================
-RENDER PRODUCTS
-====================== */
+load();
 
-function renderProducts(products){
+/* =========================
+RENDER (ONLY WHAT CHANGED)
+========================= */
 
-  const box =
-  document.getElementById("products");
+function render(){
 
-  box.innerHTML = "";
-
-  products.forEach(p=>{
-
-    box.innerHTML += `
-
-    <div class="card">
-
-      <img src="${p.image_url}">
-
-      <div class="card-body">
-
-        <h4>${p.name}</h4>
-
-        <p class="price">₱${p.price}</p>
-
-        <button class="add-btn"
-        onclick='add(${JSON.stringify(p)})'>
-        Add
-        </button>
-
-      </div>
-
-    </div>
-    `;
-  });
+renderProducts();
+renderCart();
 }
 
-/* ======================
-ADD TO CART
-====================== */
+/* =========================
+PRODUCT RENDER
+========================= */
 
-function add(p){
+function renderProducts(){
+
+const box =
+document.getElementById("products");
+
+box.innerHTML = "";
+
+state.products.forEach(p=>{
+
+const div = document.createElement("div");
+div.className="card";
+
+div.innerHTML = `
+<img src="${p.image_url}">
+<div class="card-body">
+<h4>${p.name}</h4>
+<p class="price">₱${p.price}</p>
+<button class="add-btn" data-id="${p.id}">
+Add
+</button>
+</div>
+`;
+
+box.appendChild(div);
+});
+}
+
+/* =========================
+EVENT DELEGATION (FAST CLICK)
+========================= */
+
+document.getElementById("products")
+.addEventListener("click",(e)=>{
+
+if(!e.target.classList.contains("add-btn")) return;
+
+const id = Number(e.target.dataset.id);
+
+const product =
+state.products.find(p=>p.id===id);
+
+addToCart(product);
+});
+
+/* =========================
+ADD TO CART (FAST STATE UPDATE)
+========================= */
+
+function addToCart(product){
+
+const cart = [...state.cart];
 
 const found =
-cart.find(i=>i.id===p.id);
+cart.find(i=>i.id===product.id);
 
 if(found){
 found.qty++;
 }else{
-cart.push({...p, qty:1});
+cart.push({...product, qty:1});
 }
 
-save();
-renderCart();
+setState({cart});
 }
 
-/* ======================
-CART
-====================== */
+/* =========================
+CART RENDER (LIGHTWEIGHT)
+========================= */
 
 function renderCart(){
 
 const box =
 document.getElementById("cart");
 
-box.innerHTML = "";
+let html = "";
 
-let total=0;
-let count=0;
+let total = 0;
 
-cart.forEach((i,index)=>{
+state.cart.forEach((i,index)=>{
 
 total += i.price * i.qty;
-count += i.qty;
 
-box.innerHTML += `
-
-<div class="cart-item">
-
-<h4>${i.name}</h4>
-<p>₱${i.price} x ${i.qty}</p>
-
-<button onclick="removeItem(${index})">
-Remove
-</button>
-
+html += `
+<div>
+${i.name} x${i.qty}
 </div>
 `;
 });
 
-box.innerHTML += `
-<h3>Total: ₱${total}</h3>
+html += `<h4>Total ₱${total}</h4>`;
 
-<input id="name" placeholder="Name">
-<input id="address" placeholder="Address">
-
-<button class="checkout-btn"
-onclick="checkout()">
-Checkout
-</button>
-`;
-
-document.getElementById("count").innerText=count;
+box.innerHTML = html;
 }
 
-/* ======================
-REMOVE
-====================== */
+/* =========================
+OFFLINE QUEUE SYSTEM
+========================= */
 
-function removeItem(i){
-cart.splice(i,1);
-save();
-renderCart();
+function saveQueue(order){
+
+state.queue.push(order);
+localStorage.setItem("queue",JSON.stringify(state.queue));
 }
 
-/* ======================
-SAVE
-====================== */
-
-function save(){
-localStorage.setItem("cart",JSON.stringify(cart));
-}
-
-/* ======================
-OFFLINE CHECKOUT SYSTEM
-====================== */
+/* =========================
+CHECKOUT
+========================= */
 
 async function checkout(){
 
-const name =
-document.getElementById("name").value;
-
-const address =
-document.getElementById("address").value;
-
 const order = {
-name,
-address,
-cart,
-date:new Date().toISOString()
+id: crypto.randomUUID(),
+name:document.getElementById("name").value,
+address:document.getElementById("address").value,
+cart:state.cart,
+status:"pending"
 };
+
+/* OFFLINE MODE */
 
 if(!navigator.onLine){
 
-offlineQueue.push(order);
-localStorage.setItem("queue",JSON.stringify(offlineQueue));
+saveQueue(order);
+
+document.getElementById("offline").style.display="block";
 
 alert("Saved offline");
+
 return;
 }
+
+/* ONLINE SEND */
 
 await sendOrder(order);
 }
 
-/* ======================
-SEND ORDER
-====================== */
+/* =========================
+SEND ORDER (CONFLICT SAFE)
+========================= */
 
 async function sendOrder(order){
 
+const { error } =
 await supabaseClient
 .from("orders")
 .insert([order]);
 
-alert("Order saved");
-cart=[];
-save();
-renderCart();
+if(error){
+console.log(error);
+return;
 }
 
-/* ======================
-SYNC OFFLINE
-====================== */
+/* CLEAR CART AFTER SUCCESS */
 
-async function sync(){
+setState({cart:[]});
+}
+
+/* =========================
+SYNC OFFLINE QUEUE
+========================= */
+
+async function syncQueue(){
 
 if(!navigator.onLine) return;
 
-for(const o of offlineQueue){
+let queue =
+JSON.parse(localStorage.getItem("queue")) || [];
 
-await sendOrder(o);
+for(const order of queue){
+
+await sendOrder(order);
 }
 
-offlineQueue=[];
+/* CLEAR QUEUE */
+
 localStorage.removeItem("queue");
+state.queue = [];
 }
 
-window.addEventListener("online",sync);
+window.addEventListener("online",syncQueue);
 
-/* ======================
-CART TOGGLE MOBILE
-====================== */
-
-function toggleCart(){
-document.getElementById("cart")
-.style.display =
-document.getElementById("cart").style.display==="block"
-?"none":"block";
-}
-
-/* ======================
+/* =========================
 SEARCH
-====================== */
+========================= */
 
 document.getElementById("search")
 .addEventListener("input",(e)=>{
@@ -483,14 +396,6 @@ c.innerText.toLowerCase().includes(k)
 
 });
 });
-
-/* ======================
-INIT
-====================== */
-
-loadProducts();
-renderCart();
-sync();
 
 </script>
 
