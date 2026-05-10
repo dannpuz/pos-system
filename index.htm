@@ -10,33 +10,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-  <style>
-
-    .checkout-form{
-      background:#111827;
-      padding:20px;
-      border-radius:15px;
-      margin-top:20px;
-    }
-
-    .checkout-form input{
-      width:100%;
-      padding:12px;
-      margin-bottom:12px;
-      border:none;
-      border-radius:10px;
-    }
-
-    .gps-box{
-      background:#1f2937;
-      padding:10px;
-      border-radius:10px;
-      margin-bottom:10px;
-      font-size:14px;
-    }
-
-  </style>
-
 </head>
 <body>
 
@@ -44,11 +17,7 @@
 
   <h1>CUSTOMERS ORDER FORM</h1>
 
-  <input
-    type="text"
-    id="search"
-    placeholder="Search item..."
-  >
+  <input type="text" id="search" placeholder="Search item...">
 
   <div class="cart-icon" onclick="toggleCart()">
     🛒 <span id="cart-count">0</span>
@@ -63,50 +32,22 @@
   <div class="cart hidden" id="cart">
 
     <div class="cart-header">
-
       <h2>Shopping Cart</h2>
-
-      <button onclick="toggleCart()">
-        Hide
-      </button>
-
+      <button onclick="toggleCart()">Hide</button>
     </div>
 
     <div id="cart-items"></div>
 
-    <h3>
-      Total: ₱<span id="total">0</span>
-    </h3>
+    <h3>Total: ₱<span id="total">0</span></h3>
 
     <div class="checkout-form">
 
-      <input
-        type="text"
-        id="customer_name"
-        placeholder="Name of Customer"
-      >
+      <input id="customer_name" placeholder="Customer Name">
+      <input id="store_name" placeholder="Store Name">
+      <input id="address" placeholder="Complete Address">
+      <input id="cell_number" placeholder="Cellphone Number">
 
-      <input
-        type="text"
-        id="store_name"
-        placeholder="Store Name"
-      >
-
-      <input
-        type="text"
-        id="address"
-        placeholder="Complete Address"
-      >
-
-      <input
-        type="text"
-        id="cell_number"
-        placeholder="Cellphone Number"
-      >
-           <button
-        class="checkout-btn"
-        onclick="checkout()"
-      >
+      <button class="checkout-btn" onclick="checkout()">
         Checkout
       </button>
 
@@ -120,6 +61,10 @@
 
 <script>
 
+// =====================
+// SUPABASE (FIXED)
+// =====================
+
 const SUPABASE_URL =
 "https://gwqnvhbzvzfzryxxdmui.supabase.co";
 
@@ -131,30 +76,41 @@ const supabaseClient = supabase.createClient(
   SUPABASE_KEY
 );
 
-let cart =
-JSON.parse(localStorage.getItem("cart")) || [];
+// =====================
+// VARIABLES
+// =====================
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 let gpsLocation = "Unavailable";
 
-const productsDiv =
-document.getElementById("products");
+const productsDiv = document.getElementById("products");
 
 
-// =========================
+// =====================
 // LOAD PRODUCTS
-// =========================
+// =====================
 
 async function loadProducts(){
 
+  console.log("Loading products...");
+
   const { data, error } =
-  await supabaseClient
-    .from("products")
-    .select("*");
+    await supabaseClient
+      .from("products")
+      .select("*");
+
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
 
   if(error){
+    alert("Supabase Error: " + error.message);
+    return;
+  }
 
-    console.log(error);
-
+  if(!data || data.length === 0){
+    productsDiv.innerHTML =
+      "<h3>No products found</h3>";
     return;
   }
 
@@ -162,9 +118,9 @@ async function loadProducts(){
 }
 
 
-// =========================
+// =====================
 // DISPLAY PRODUCTS
-// =========================
+// =====================
 
 function displayProducts(products){
 
@@ -173,7 +129,6 @@ function displayProducts(products){
   products.forEach(product => {
 
     productsDiv.innerHTML += `
-
       <div class="card">
 
         <img src="${product.image_url}" />
@@ -182,13 +137,9 @@ function displayProducts(products){
 
           <h3>${product.name}</h3>
 
-          <p class="price">
-            ₱${product.price}
-          </p>
+          <p>₱${product.price}</p>
 
-          <button
-            class="add-btn"
-
+          <button class="add-btn"
             onclick="addToCart(
               ${product.id},
               '${product.name}',
@@ -196,72 +147,53 @@ function displayProducts(products){
               '${product.image_url}'
             )">
 
-            🛒 Add to Cart
+            Add to Cart
 
           </button>
 
         </div>
 
       </div>
-
     `;
   });
 }
 
 
-// =========================
+// =====================
 // ADD TO CART
-// =========================
+// =====================
 
-function addToCart(
-  id,
-  name,
-  price,
-  image_url
-){
+function addToCart(id,name,price,image_url){
 
   document.getElementById("addSound").play();
 
-  const existing =
-  cart.find(item => item.id === id);
+  const existing = cart.find(i => i.id === id);
 
   if(existing){
-
     existing.qty++;
-
   }else{
-
     cart.push({
-      id,
-      name,
-      price:Number(price),
-      image_url,
-      qty:1
+      id,name,price,image_url,qty:1
     });
   }
 
   saveCart();
-
   renderCart();
 }
 
 
-// =========================
-// SAVE CART
-// =========================
+// =====================
+// CART SAVE
+// =====================
 
 function saveCart(){
-
-  localStorage.setItem(
-    "cart",
-    JSON.stringify(cart)
-  );
+  localStorage.setItem("cart",JSON.stringify(cart));
 }
 
 
-// =========================
+// =====================
 // RENDER CART
-// =========================
+// =====================
 
 function renderCart(){
 
@@ -273,349 +205,122 @@ function renderCart(){
   let total = 0;
   let count = 0;
 
-  cart.forEach((item,index)=>{
+  cart.forEach((item,i)=>{
 
     total += item.price * item.qty;
-
     count += item.qty;
 
     cartItems.innerHTML += `
-
       <div class="cart-item">
 
         <h4>${item.name}</h4>
+        <p>₱${item.price} x ${item.qty}</p>
 
-        <p>₱${item.price}</p>
-
-        <p>Qty: ${item.qty}</p>
-
-        <div class="qty-controls">
-
-          <button
-            onclick="changeQty(${index},-1)">
-            -
-          </button>
-
-          <button
-            onclick="changeQty(${index},1)">
-            +
-          </button>
-
-          <button
-            onclick="removeItem(${index})">
-            Remove
-          </button>
-
-        </div>
+        <button onclick="changeQty(${i},-1)">-</button>
+        <button onclick="changeQty(${i},1)">+</button>
+        <button onclick="removeItem(${i})">Remove</button>
 
       </div>
-
     `;
   });
 
-  document.getElementById("total")
-  .innerText = total;
-
-  document.getElementById("cart-count")
-  .innerText = count;
+  document.getElementById("total").innerText = total;
+  document.getElementById("cart-count").innerText = count;
 }
 
 
-// =========================
-// CHANGE QTY
-// =========================
+// =====================
+// CART ACTIONS
+// =====================
 
-function changeQty(index,change){
-
-  cart[index].qty += change;
-
-  if(cart[index].qty <= 0){
-
-    cart.splice(index,1);
-  }
-
+function changeQty(i,val){
+  cart[i].qty += val;
+  if(cart[i].qty <= 0) cart.splice(i,1);
   saveCart();
-
   renderCart();
 }
 
-
-// =========================
-// REMOVE ITEM
-// =========================
-
-function removeItem(index){
-
-  cart.splice(index,1);
-
+function removeItem(i){
+  cart.splice(i,1);
   saveCart();
-
   renderCart();
 }
-
-
-// =========================
-// TOGGLE CART
-// =========================
 
 function toggleCart(){
-
-  document.getElementById("cart")
-  .classList.toggle("hidden");
+  document.getElementById("cart").classList.toggle("hidden");
 }
 
 
-// =========================
-// RECEIPT
-// =========================
-
-function generateReceipt(){
-
-  return "RCPT-" + Date.now();
-}
-
-
-// =========================
-// GPS LOCATION
-// =========================
-
-let gpsLocation = "Location Unavailable";
-
-async function detectLocation(){
-
-  // Try browser GPS first
-  if(navigator.geolocation){
-
-    navigator.geolocation.getCurrentPosition(
-
-      (position)=>{
-
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        gpsLocation = `${lat}, ${lng}`;
-
-        console.log("GPS LOCATION:", gpsLocation);
-
-      },
-
-      async (error)=>{
-
-        console.log("GPS BLOCKED");
-
-        // Fallback to IP location
-        await getIPLocation();
-      },
-
-      {
-        enableHighAccuracy:true,
-        timeout:10000,
-        maximumAge:0
-      }
-
-    );
-
-  }else{
-
-    // Browser no GPS support
-    await getIPLocation();
-  }
-}
-
-
-// =========================
-// FALLBACK IP LOCATION
-// =========================
-
-async function getIPLocation(){
-
-  try{
-
-    const response =
-    await fetch("https://ipapi.co/json/");
-
-    const data =
-    await response.json();
-
-    gpsLocation =
-    `${data.city}, ${data.region}, ${data.country_name}`;
-
-    console.log(
-      "IP LOCATION:",
-      gpsLocation
-    );
-
-  }catch(err){
-
-    console.log(err);
-
-    gpsLocation =
-    "Location Unavailable";
-  }
-}
-// =========================
+// =====================
 // CHECKOUT
-// =========================
+// =====================
 
 async function checkout(){
 
   if(cart.length === 0){
-
     alert("Cart is empty");
-
     return;
   }
 
   const customer_name =
-  document.getElementById(
-    "customer_name"
-  ).value;
+  document.getElementById("customer_name").value;
 
   const store_name =
-  document.getElementById(
-    "store_name"
-  ).value;
+  document.getElementById("store_name").value;
 
   const address =
-  document.getElementById(
-    "address"
-  ).value;
+  document.getElementById("address").value;
 
   const cell_number =
-  document.getElementById(
-    "cell_number"
-  ).value;
+  document.getElementById("cell_number").value;
 
-  if(
-    !customer_name ||
-    !store_name ||
-    !address ||
-    !cell_number
-  ){
-
-    alert("Please fill all fields");
-
+  if(!customer_name || !store_name || !address || !cell_number){
+    alert("Fill all fields");
     return;
   }
 
-  // =====================
-  // SAVE CUSTOMER
-  // =====================
-
-  const customerResult =
   await supabaseClient
     .from("customers")
     .insert([{
-
       customer_name,
       store_name,
       address,
       cell_number,
       gps_location:gpsLocation
-
     }]);
 
-  if(customerResult.error){
+  let receipt = "RCPT-" + Date.now();
+  let total = 0;
 
-    console.log(customerResult.error);
+  for(let item of cart){
 
-    alert("Failed to save customer");
+    total += item.price * item.qty;
 
-    return;
-  }
-
-  const receipt =
-  generateReceipt();
-
-  let grandTotal = 0;
-
-  // =====================
-  // SAVE SALES
-  // =====================
-
-  for(const item of cart){
-
-    const total =
-    item.price * item.qty;
-
-    grandTotal += total;
-
-    const saleResult =
     await supabaseClient
       .from("sales")
       .insert([{
-
         receipt_id:receipt,
         products:item.name,
         qty:item.qty,
         price:item.price,
-        total:total,
+        total:item.price * item.qty,
         customers:customer_name
-
       }]);
-
-    if(saleResult.error){
-
-      console.log(saleResult.error);
-
-      alert("Failed to save sales");
-
-      return;
-    }
   }
 
-  alert(
-`Checkout Success
-
-Receipt:
-${receipt}
-
-Total:
-₱${grandTotal}`
-  );
+  alert("Checkout Success!");
 
   cart = [];
-
   saveCart();
-
   renderCart();
 }
 
 
-// =========================
-// SEARCH
-// =========================
-
-document.getElementById("search")
-.addEventListener("input",(e)=>{
-
-  const keyword =
-  e.target.value.toLowerCase();
-
-  const cards =
-  document.querySelectorAll(".card");
-
-  cards.forEach(card=>{
-
-    const name =
-    card.innerText.toLowerCase();
-
-    card.style.display =
-    name.includes(keyword)
-    ? "block"
-    : "none";
-  });
-});
-
-
-// =========================
-// START
-// =========================
-
-detectLocation();
+// =====================
+// INIT
+// =====================
 
 loadProducts();
-
 renderCart();
 
 </script>
