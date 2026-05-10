@@ -89,6 +89,24 @@ input{
 
 <body>
 
+<div id="receiptModal" style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.7);
+z-index:2000;
+align-items:center;
+justify-content:center;
+">
+
+  <div style="background:white;color:black;padding:20px;width:300px;border-radius:10px;">
+    <h3>Receipt</h3>
+    <div id="receiptContent"></div>
+    <button onclick="closeReceipt()" class="add-btn">Close</button>
+  </div>
+
+</div>
+
 <header>
 <input id="search" placeholder="Search product...">
 </header>
@@ -225,24 +243,89 @@ async function checkout(){
 
 if(cart.length===0) return alert("Empty cart");
 
+const name = document.getElementById("name").value.trim();
+const address = document.getElementById("address").value.trim();
+const phone = document.getElementById("phone").value.trim();
+
+// ✅ VALIDATION
+if(!name || !address || !phone){
+  return alert("Please complete Name, Address, Phone");
+}
+
+if(!/^\d{11,}$/.test(phone)){
+  return alert("Phone must be at least 11 digits");
+}
+
 const order = {
-name:document.getElementById("name").value,
-address:document.getElementById("address").value,
-phone:document.getElementById("phone").value,
-gps,
-items:cart,
-status:"pending"
+  name,
+  address,
+  phone,
+  gps,
+  items: cart,
+  status: "pending",
+  created_at: new Date().toISOString()
 };
 
 if(!navigator.onLine){
-localStorage.setItem("queue",JSON.stringify([...JSON.parse(localStorage.getItem("queue")||"[]"),order]));
-return alert("Saved offline");
+  localStorage.setItem(
+    "queue",
+    JSON.stringify([...JSON.parse(localStorage.getItem("queue")||"[]"), order])
+  );
+  return alert("Saved offline");
 }
 
-await supabaseClient.from("orders").insert([order]);
+// ✅ INSERT TO SUPABASE SALES TABLE
+const {data, error} = await supabaseClient
+  .from("sales")   // <-- FIXED TABLE NAME
+  .insert([order])
+  .select()
+  .single();
 
+if(error){
+  console.error(error);
+  return alert("Order failed to save");
+}
+
+/* -------------------------
+   ✅ RECEIPT DISPLAY
+--------------------------*/
+function showReceipt(order){
+
+let itemsHtml = order.items.map(i =>
+  `${i.name} x${i.qty} = ₱${i.price * i.qty}`
+).join("<br>");
+
+document.getElementById("receiptContent").innerHTML = `
+<b>Name:</b> ${order.name}<br>
+<b>Address:</b> ${order.address}<br>
+<b>Phone:</b> ${order.phone}<br><br>
+<b>Items:</b><br>${itemsHtml}<br><br>
+<b>Total Items:</b> ${order.items.length}
+`;
+
+document.getElementById("receiptModal").style.display = "flex";
+}
+
+function closeReceipt(){
+document.getElementById("receiptModal").style.display = "none";
+}
+
+/* -------------------------
+   ✅ EMAIL NOTIFICATION (Edge Function)
+   IMPORTANT: requires Supabase Edge Function
+--------------------------*/
+await supabaseClient.functions.invoke("send-order-email", {
+  body: data
+});
+
+/* CLEAR CART */
 cart = [];
 renderCart();
+
+document.getElementById("name").value = "";
+document.getElementById("address").value = "";
+document.getElementById("phone").value = "";
+
 }
 
 /* INIT */
