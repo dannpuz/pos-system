@@ -381,129 +381,186 @@ function generateReceipt(){
 
 
 // =========================
-// GPS LOCATION
+// GPS VARIABLES
+// =========================
+
+let latitude = "";
+let longitude = "";
+
+let gpsLocation = "Unavailable";
+
+let googleMapLink = "";
+
+
+// =========================
+// DETECT LOCATION
 // =========================
 
 async function detectLocation(){
 
-  const gpsBox =
-  document.getElementById(
-    "gps_location"
-  );
+  return new Promise((resolve)=>{
 
-  gpsBox.innerText =
-  "GPS: Detecting location...";
-
-  // =========================
-  // TRY REAL GPS
-  // =========================
-
-  if(navigator.geolocation){
-
-    navigator.geolocation.getCurrentPosition(
-
-      async(position)=>{
-
-        const lat =
-        position.coords.latitude;
-
-        const lng =
-        position.coords.longitude;
-
-        // SAVE COORDINATES
-        gpsLocation =
-        `${lat}, ${lng}`;
-
-        // OPTIONAL:
-        // Convert to readable address
-
-        try{
-
-          const response =
-          await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-          );
-
-          const data =
-          await response.json();
-
-          if(data.display_name){
-
-            gpsLocation =
-            data.display_name;
-          }
-
-        }catch(err){
-
-          console.log(err);
-        }
-
-        gpsBox.innerText =
-        "GPS Captured Successfully";
-
-        console.log(
-          "GPS LOCATION:",
-          gpsLocation
-        );
-
-      },
-
-      async(error)=>{
-
-        console.log(
-          "GPS DENIED:",
-          error
-        );
-
-        // =========================
-        // FALLBACK TO IP LOCATION
-        // =========================
-
-        try{
-
-          const response =
-          await fetch(
-            "https://ipapi.co/json/"
-          );
-
-          const data =
-          await response.json();
-
-          gpsLocation =
-          `${data.city},
-           ${data.region},
-           ${data.country_name}`;
-
-          gpsBox.innerText =
-          "Approximate Location Captured";
-
-        }catch(err){
-
-          gpsLocation =
-          "Location Unavailable";
-
-          gpsBox.innerText =
-          "Location Unavailable";
-        }
-      },
-
-      {
-        enableHighAccuracy:true,
-        timeout:15000,
-        maximumAge:0
-      }
+    const gpsBox =
+    document.getElementById(
+      "gps_location"
     );
 
-  }else{
+    gpsBox.innerHTML =
+    "GPS: Detecting location...";
 
-    gpsLocation =
-    "GPS Not Supported";
+    // =====================
+    // REAL GPS
+    // =====================
 
-    gpsBox.innerText =
-    "GPS Not Supported";
-  }
+    if(navigator.geolocation){
+
+      navigator.geolocation.getCurrentPosition(
+
+        async(position)=>{
+
+          latitude =
+          position.coords.latitude;
+
+          longitude =
+          position.coords.longitude;
+
+          gpsLocation =
+          `${latitude}, ${longitude}`;
+
+          // GOOGLE MAP LINK
+
+          googleMapLink =
+          `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+          // GET READABLE ADDRESS
+
+          try{
+
+            const response =
+            await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+
+            const data =
+            await response.json();
+
+            if(data.display_name){
+
+              gpsLocation =
+              data.display_name;
+            }
+
+          }catch(err){
+
+            console.log(err);
+          }
+
+          gpsBox.innerHTML =
+          `
+          GPS Captured Successfully
+          <br><br>
+
+          <a
+            href="${googleMapLink}"
+            target="_blank"
+            style="
+              color:yellow;
+              font-weight:bold;
+            "
+          >
+            Open Google Maps
+          </a>
+          `;
+
+          console.log(
+            gpsLocation
+          );
+
+          resolve();
+        },
+
+        async(error)=>{
+
+          console.log(
+            "GPS BLOCKED"
+          );
+
+          // =====================
+          // FALLBACK TO IP
+          // =====================
+
+          try{
+
+            const response =
+            await fetch(
+              "https://ipapi.co/json/"
+            );
+
+            const data =
+            await response.json();
+
+            latitude =
+            data.latitude;
+
+            longitude =
+            data.longitude;
+
+            gpsLocation =
+            `${data.city},
+             ${data.region},
+             ${data.country_name}`;
+
+            googleMapLink =
+            `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+            gpsBox.innerHTML =
+            `
+            Approximate Location
+            <br><br>
+
+            <a
+              href="${googleMapLink}"
+              target="_blank"
+              style="
+                color:yellow;
+                font-weight:bold;
+              "
+            >
+              Open Google Maps
+            </a>
+            `;
+
+          }catch(err){
+
+            gpsLocation =
+            "Unavailable";
+
+            gpsBox.innerHTML =
+            "Location Unavailable";
+          }
+
+          resolve();
+        },
+
+        {
+          enableHighAccuracy:true,
+          timeout:15000,
+          maximumAge:0
+        }
+      );
+
+    }else{
+
+      gpsLocation =
+      "GPS Not Supported";
+
+      gpsBox.innerHTML =
+      "GPS Not Supported";
+
+      resolve();
+    }
+  });
 }
-
 // =========================
 // CHECKOUT
 // =========================
@@ -554,18 +611,25 @@ await detectLocation();
   // =====================
 
   const customerResult =
-  await supabaseClient
-    .from("customers")
-    .insert([{
+await supabaseClient
+  .from("customers")
+  .insert([{
 
-      customer_name,
-      store_name,
-      address,
-      cell_number,
-      gps_location:gpsLocation
+    customer_name,
+    store_name,
+    address,
+    cell_number,
 
-    }]);
+    gps_location:gpsLocation,
 
+    latitude:latitude,
+
+    longitude:longitude,
+
+    google_map:googleMapLink
+
+  }]);
+  
   if(customerResult.error){
 
     console.log(customerResult.error);
