@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Admin Dashboard</title>
+
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<h1 style="padding:20px;">
+  ADMIN DASHBOARD
+</h1>
+
+<div style="padding:20px;">
+
+  <input type="text" id="name" placeholder="Product Name">
+  <input type="number" id="price" placeholder="Price">
+  <input type="text" id="image" placeholder="Image URL">
+
+  <button onclick="addProduct()">
+    Add Product
+  </button>
+
+</div>
+
+<div id="admin-products"
+  class="product-grid"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="admin.js"></script>
+
+</body>
+</html>

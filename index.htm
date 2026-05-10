@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>POS System</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+
+<header>
+  <h1>CUSTOMERS ORDER FORM</h1>
+
+  <input type="text" id="search" placeholder="Search item...">
+
+  <div class="cart-icon" onclick="toggleCart()">
+    🛒 <span id="cart-count">0</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div id="products" class="product-grid"></div>
+
+  <div class="cart hidden" id="cart">
+
+    <div class="cart-header">
+      <h2>Shopping Cart</h2>
+      <button onclick="toggleCart()">Hide</button>
+    </div>
+
+    <div id="cart-items"></div>
+
+    <h3>Total: ₱<span id="total">0</span></h3>
+
+    <button class="checkout-btn" onclick="checkout()">
+      Checkout
+    </button>
+
+  </div>
+
+</div>
+
+<audio id="addSound" src="sounds/add.mp3"></audio>
+
+<script src="app.js"></script>
+
+</body>
+</html>

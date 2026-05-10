@@ -1,0 +1,160 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+body{
+  background:linear-gradient(135deg,#1e1e2f,#3f51b5);
+  min-height:100vh;
+  color:white;
+}
+
+header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:#111827;
+  padding:20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+
+header h1{
+  font-size:24px;
+  font-weight:bold;
+}
+
+#search{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+}
+
+.cart-icon{
+  cursor:pointer;
+  font-size:24px;
+  position:relative;
+}
+
+#cart-count{
+  background:red;
+  color:white;
+  border-radius:50%;
+  padding:5px 10px;
+  font-size:14px;
+}
+
+.container{
+  display:flex;
+}
+
+.product-grid{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:20px;
+  padding:20px;
+}
+
+.card{
+  background:white;
+  color:black;
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+}
+
+.card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+}
+
+.card-body{
+  padding:15px;
+}
+
+.price{
+  font-size:20px;
+  color:#3f51b5;
+  font-weight:bold;
+}
+
+button{
+  border:none;
+  padding:10px 15px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.add-btn{
+  background:#3f51b5;
+  color:white;
+  width:100%;
+  margin-top:10px;
+}
+
+.add-btn:hover{
+  background:#5c6bc0;
+}
+
+.cart{
+  width:350px;
+  background:#111827;
+  height:100vh;
+  overflow:auto;
+  padding:20px;
+  position:sticky;
+  top:0;
+}
+
+.hidden{
+  display:none;
+}
+
+.cart-item{
+  margin-bottom:15px;
+  border-bottom:1px solid #333;
+  padding-bottom:10px;
+}
+
+.qty-controls{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.checkout-btn{
+  width:100%;
+  background:#10b981;
+  color:white;
+  margin-top:20px;
+}
+
+.checkout-btn:hover{
+  background:#059669;
+}
+
+@media(max-width:768px){
+
+  .container{
+    flex-direction:column;
+  }
+
+  .cart{
+    width:100%;
+    height:auto;
+  }
+
+}
