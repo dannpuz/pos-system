@@ -10,6 +10,10 @@
 
 <style>
 
+/* =========================
+BASE
+========================= */
+
 *{
   margin:0;
   padding:0;
@@ -22,7 +26,9 @@ body{
   color:white;
 }
 
-/* HEADER */
+/* =========================
+HEADER
+========================= */
 
 header{
   position:sticky;
@@ -31,6 +37,7 @@ header{
   padding:10px;
   display:flex;
   gap:10px;
+  z-index:10;
 }
 
 #search{
@@ -40,7 +47,9 @@ header{
   border-radius:8px;
 }
 
-/* GRID */
+/* =========================
+GRID
+========================= */
 
 .product-grid{
   display:grid;
@@ -49,7 +58,9 @@ header{
   padding:10px;
 }
 
-/* CARD */
+/* =========================
+CARD
+========================= */
 
 .card{
   background:white;
@@ -73,7 +84,9 @@ header{
   font-weight:bold;
 }
 
-/* BUTTON */
+/* =========================
+BUTTON
+========================= */
 
 .add-btn{
   width:100%;
@@ -85,7 +98,30 @@ header{
   cursor:pointer;
 }
 
-/* CART */
+/* =========================
+FLOAT CART ICON (FIXED)
+========================= */
+
+.cart-fab{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:#2563eb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  z-index:1000;
+  cursor:pointer;
+  box-shadow:0 5px 15px rgba(0,0,0,0.4);
+}
+
+/* =========================
+CART PANEL
+========================= */
 
 .cart{
   position:fixed;
@@ -96,9 +132,56 @@ header{
   background:#111827;
   padding:10px;
   overflow:auto;
+  z-index:999;
 }
 
-/* OFFLINE */
+/* =========================
+CART ITEMS
+========================= */
+
+.cart-item{
+  background:#1f2937;
+  padding:8px;
+  margin-bottom:8px;
+  border-radius:8px;
+}
+
+.qty{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-top:5px;
+}
+
+.qty button{
+  padding:5px 10px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+/* =========================
+CHECKOUT PANEL (FIX MOBILE)
+========================= */
+
+.checkout{
+  margin-top:10px;
+  padding:10px;
+  background:#0b1220;
+  border-radius:10px;
+}
+
+.checkout input{
+  width:100%;
+  padding:10px;
+  margin-bottom:8px;
+  border:none;
+  border-radius:6px;
+}
+
+/* =========================
+OFFLINE
+========================= */
 
 .offline{
   background:red;
@@ -108,31 +191,62 @@ header{
   display:none;
 }
 
+/* =========================
+MOBILE FIX
+========================= */
+
+@media(max-width:768px){
+  .product-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .cart{
+    width:100%;
+    height:60%;
+    bottom:0;
+    top:auto;
+    border-top-left-radius:15px;
+    border-top-right-radius:15px;
+  }
+}
+
 </style>
 </head>
 
 <body>
 
-<div id="offline" class="offline">
-OFFLINE MODE
-</div>
+<div id="offline" class="offline">OFFLINE MODE</div>
 
 <header>
 <input id="search" placeholder="Search product...">
 </header>
 
+<!-- PRODUCTS -->
 <div id="products" class="product-grid"></div>
 
-<div class="cart">
+<!-- FLOAT CART ICON -->
+<div class="cart-fab" onclick="toggleCart()">🛒 <span id="count">0</span></div>
+
+<!-- CART PANEL -->
+<div class="cart" id="cartPanel" style="display:none;">
+
 <h3>Cart</h3>
 <div id="cart"></div>
 
-<input id="name" placeholder="Name">
-<input id="address" placeholder="Address">
+<!-- CUSTOMER INFO -->
+<div class="checkout">
 
-<button onclick="checkout()">
+<input id="name" placeholder="Customer Name">
+<input id="address" placeholder="Address">
+<input id="phone" placeholder="Phone">
+
+<div id="gps">GPS: detecting...</div>
+
+<button onclick="checkout()" class="add-btn">
 Checkout
 </button>
+
+</div>
 
 </div>
 
@@ -148,28 +262,16 @@ const supabaseClient = supabase.createClient(
 );
 
 /* =========================
-STATE (React-style)
+STATE
 ========================= */
 
 let state = {
 products: [],
-cart: [],
-queue: []
+cart: []
 };
 
 /* =========================
-SET STATE (FAST RENDER)
-========================= */
-
-function setState(newState){
-
-state = {...state, ...newState};
-
-render();
-}
-
-/* =========================
-INITIAL LOAD
+LOAD PRODUCTS
 ========================= */
 
 async function load(){
@@ -179,127 +281,147 @@ await supabaseClient
 .from("products")
 .select("*");
 
-setState({ products:data });
+state.products = data || [];
+render();
 }
 
 load();
 
 /* =========================
-RENDER (ONLY WHAT CHANGED)
+RENDER
 ========================= */
 
 function render(){
-
 renderProducts();
 renderCart();
 }
 
 /* =========================
-PRODUCT RENDER
+PRODUCTS
 ========================= */
 
 function renderProducts(){
 
-const box =
-document.getElementById("products");
+const box = document.getElementById("products");
 
 box.innerHTML = "";
 
 state.products.forEach(p=>{
 
-const div = document.createElement("div");
-div.className="card";
-
-div.innerHTML = `
+box.innerHTML += `
+<div class="card">
 <img src="${p.image_url}">
 <div class="card-body">
 <h4>${p.name}</h4>
 <p class="price">₱${p.price}</p>
-<button class="add-btn" data-id="${p.id}">
+<button class="add-btn" onclick="add(${p.id})">
 Add
 </button>
 </div>
+</div>
 `;
 
-box.appendChild(div);
 });
 }
 
 /* =========================
-EVENT DELEGATION (FAST CLICK)
+ADD CART
 ========================= */
 
-document.getElementById("products")
-.addEventListener("click",(e)=>{
+function add(id){
 
-if(!e.target.classList.contains("add-btn")) return;
+const p = state.products.find(x=>x.id===id);
 
-const id = Number(e.target.dataset.id);
+const c = [...state.cart];
 
-const product =
-state.products.find(p=>p.id===id);
+const f = c.find(i=>i.id===id);
 
-addToCart(product);
-});
+if(f) f.qty++;
+else c.push({...p, qty:1});
 
-/* =========================
-ADD TO CART (FAST STATE UPDATE)
-========================= */
+state.cart = c;
 
-function addToCart(product){
-
-const cart = [...state.cart];
-
-const found =
-cart.find(i=>i.id===product.id);
-
-if(found){
-found.qty++;
-}else{
-cart.push({...product, qty:1});
-}
-
-setState({cart});
+render();
 }
 
 /* =========================
-CART RENDER (LIGHTWEIGHT)
+CART RENDER
 ========================= */
 
 function renderCart(){
 
-const box =
-document.getElementById("cart");
+const box = document.getElementById("cart");
 
 let html = "";
-
 let total = 0;
+let count = 0;
 
 state.cart.forEach((i,index)=>{
 
-total += i.price * i.qty;
+total += i.price*i.qty;
+count += i.qty;
 
 html += `
-<div>
-${i.name} x${i.qty}
+<div class="cart-item">
+<b>${i.name}</b>
+<p>₱${i.price}</p>
+
+<div class="qty">
+<button onclick="minus(${index})">-</button>
+<span>${i.qty}</span>
+<button onclick="plus(${index})">+</button>
+</div>
 </div>
 `;
+
 });
 
-html += `<h4>Total ₱${total}</h4>`;
+document.getElementById("count").innerText = count;
 
-box.innerHTML = html;
+box.innerHTML = html + `<h3>Total ₱${total}</h3>`;
 }
 
 /* =========================
-OFFLINE QUEUE SYSTEM
+QTY
 ========================= */
 
-function saveQueue(order){
-
-state.queue.push(order);
-localStorage.setItem("queue",JSON.stringify(state.queue));
+function minus(i){
+state.cart[i].qty--;
+if(state.cart[i].qty<=0) state.cart.splice(i,1);
+render();
 }
+
+function plus(i){
+state.cart[i].qty++;
+render();
+}
+
+/* =========================
+TOGGLE CART
+========================= */
+
+function toggleCart(){
+
+const el = document.getElementById("cartPanel");
+el.style.display = el.style.display==="none"?"block":"none";
+}
+
+/* =========================
+GPS
+========================= */
+
+let gpsText="";
+
+navigator.geolocation?.getCurrentPosition(
+pos=>{
+gpsText = `${pos.coords.latitude},${pos.coords.longitude}`;
+document.getElementById("gps").innerText = gpsText;
+},
+()=>{
+gpsText="Unavailable";
+document.getElementById("gps").innerText="GPS Unavailable";
+}
+);
 
 /* =========================
 CHECKOUT
@@ -307,95 +429,29 @@ CHECKOUT
 
 async function checkout(){
 
+if(state.cart.length===0) return alert("Empty cart");
+
 const order = {
-id: crypto.randomUUID(),
 name:document.getElementById("name").value,
 address:document.getElementById("address").value,
-cart:state.cart,
+phone:document.getElementById("phone").value,
+gps:gpsText,
+items:state.cart,
 status:"pending"
 };
 
-/* OFFLINE MODE */
-
 if(!navigator.onLine){
-
-saveQueue(order);
-
-document.getElementById("offline").style.display="block";
-
-alert("Saved offline");
-
-return;
+localStorage.setItem("queue",
+JSON.stringify([...JSON.parse(localStorage.getItem("queue")||"[]"),order])
+);
+return alert("Saved offline");
 }
 
-/* ONLINE SEND */
+await supabaseClient.from("orders").insert([order]);
 
-await sendOrder(order);
+state.cart=[];
+render();
 }
-
-/* =========================
-SEND ORDER (CONFLICT SAFE)
-========================= */
-
-async function sendOrder(order){
-
-const { error } =
-await supabaseClient
-.from("orders")
-.insert([order]);
-
-if(error){
-console.log(error);
-return;
-}
-
-/* CLEAR CART AFTER SUCCESS */
-
-setState({cart:[]});
-}
-
-/* =========================
-SYNC OFFLINE QUEUE
-========================= */
-
-async function syncQueue(){
-
-if(!navigator.onLine) return;
-
-let queue =
-JSON.parse(localStorage.getItem("queue")) || [];
-
-for(const order of queue){
-
-await sendOrder(order);
-}
-
-/* CLEAR QUEUE */
-
-localStorage.removeItem("queue");
-state.queue = [];
-}
-
-window.addEventListener("online",syncQueue);
-
-/* =========================
-SEARCH
-========================= */
-
-document.getElementById("search")
-.addEventListener("input",(e)=>{
-
-const k = e.target.value.toLowerCase();
-
-document.querySelectorAll(".card")
-.forEach(c=>{
-
-c.style.display =
-c.innerText.toLowerCase().includes(k)
-?"block":"none";
-
-});
-});
 
 </script>
 
