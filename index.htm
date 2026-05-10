@@ -1,338 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+<title>POS System</title>
 
-  <title>POS System</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
 
-  <style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial;
-    }
+body{
+  background:#0f172a;
+  color:white;
+}
 
-    body{
-      background:#f3f4f6;
-      color:#111827;
-    }
+/* HEADER */
 
-    header{
-      background:#111827;
-      color:white;
-      padding:15px;
-      position:sticky;
-      top:0;
-      z-index:1000;
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
+header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:#111827;
+  padding:15px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
 
-    header h1{
-      font-size:18px;
-      white-space:nowrap;
-    }
+header h1{
+  font-size:18px;
+}
 
-    #search{
-      flex:1;
-      padding:10px;
-      border:none;
-      border-radius:10px;
-    }
+#search{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+}
 
-    .cart-icon{
-      background:#3b82f6;
-      width:50px;
-      height:50px;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      position:relative;
-      font-size:22px;
-    }
+/* CART ICON */
 
-    #cart-count{
-      position:absolute;
-      top:-5px;
-      right:-5px;
-      background:red;
-      color:white;
-      width:22px;
-      height:22px;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:12px;
-    }
+.cart-icon{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:60px;
+  height:60px;
+  background:#3b82f6;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  cursor:pointer;
+  z-index:9999;
+  box-shadow:0 5px 15px rgba(0,0,0,0.4);
+}
 
-    .container{
-      display:flex;
-    }
+#cart-count{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  background:red;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+}
 
-    .product-grid{
-      flex:1;
-      display:grid;
-      grid-template-columns:
-      repeat(auto-fill,minmax(180px,1fr));
-      gap:15px;
-      padding:15px;
-    }
+/* PRODUCTS */
 
-    .card{
-      background:white;
-      border-radius:15px;
-      overflow:hidden;
-      box-shadow:0 4px 10px rgba(0,0,0,0.1);
-    }
+.product-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  padding:10px;
+}
 
-    .card img{
-      width:100%;
-      height:150px;
-      object-fit:cover;
-    }
+.card{
+  background:white;
+  color:black;
+  border-radius:12px;
+  overflow:hidden;
+}
 
-    .card-body{
-      padding:10px;
-    }
+.card img{
+  width:100%;
+  height:100px;
+  object-fit:cover;
+}
 
-    .card h3{
-      font-size:16px;
-      margin-bottom:8px;
-    }
+.card-body{
+  padding:8px;
+}
 
-    .price{
-      color:#2563eb;
-      font-weight:bold;
-      margin-bottom:10px;
-    }
+.card h3{
+  font-size:13px;
+  min-height:32px;
+}
 
-    .add-btn{
-      width:100%;
-      padding:10px;
-      border:none;
-      border-radius:10px;
-      background:#2563eb;
-      color:white;
-      cursor:pointer;
-    }
+.price{
+  color:#2563eb;
+  font-weight:bold;
+  margin-top:5px;
+}
 
-    .cart{
-      width:350px;
-      background:#111827;
-      color:white;
-      height:100vh;
-      overflow:auto;
-      padding:20px;
-      position:sticky;
-      top:0;
-    }
+.add-btn{
+  width:100%;
+  margin-top:8px;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  background:#3b82f6;
+  color:white;
+  cursor:pointer;
+  font-size:12px;
+}
 
-    .hidden{
-      display:none;
-    }
+/* CART */
 
-    .cart-header{
-      display:flex;
-      justify-content:space-between;
-      margin-bottom:20px;
-    }
+.cart{
+  position:fixed;
+  top:0;
+  right:0;
+  width:100%;
+  max-width:400px;
+  height:100vh;
+  background:#111827;
+  overflow:auto;
+  padding:20px;
+  z-index:99999;
+}
 
-    .cart-item{
-      border-bottom:1px solid #374151;
-      padding-bottom:10px;
-      margin-bottom:10px;
-    }
+.hidden{
+  display:none;
+}
 
-    .qty-controls{
-      display:flex;
-      gap:5px;
-      margin-top:10px;
-      flex-wrap:wrap;
-    }
+.cart-header{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
 
-    .qty-controls button{
-      padding:6px 10px;
-      border:none;
-      border-radius:8px;
-      cursor:pointer;
-    }
+.cart-item{
+  background:#1f2937;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
 
-    .checkout-form{
-      margin-top:20px;
-    }
+.qty-controls{
+  display:flex;
+  gap:5px;
+  margin-top:10px;
+}
 
-    .checkout-form input{
-      width:100%;
-      padding:12px;
-      border:none;
-      border-radius:10px;
-      margin-bottom:10px;
-    }
+.qty-controls button{
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
 
-    .gps-box{
-      background:#1f2937;
-      padding:10px;
-      border-radius:10px;
-      margin-bottom:10px;
-      font-size:13px;
-    }
+.checkout-form{
+  margin-top:20px;
+}
 
-    .checkout-btn{
-      width:100%;
-      padding:14px;
-      border:none;
-      border-radius:10px;
-      background:#10b981;
-      color:white;
-      font-size:16px;
-      cursor:pointer;
-    }
+.checkout-form input{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  margin-bottom:10px;
+}
 
-    @media(max-width:768px){
+.gps-box{
+  background:#1f2937;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  font-size:13px;
+}
 
-      .container{
-        flex-direction:column;
-      }
+.checkout-btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:#10b981;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
 
-      .product-grid{
-        grid-template-columns:
-        repeat(2,1fr);
-      }
+.receipt-box{
+  background:#1f2937;
+  padding:15px;
+  border-radius:10px;
+  margin-top:20px;
+  white-space:pre-line;
+}
 
-      .card img{
-        height:120px;
-      }
-
-      .card h3{
-        font-size:14px;
-      }
-
-      .cart{
-        width:100%;
-        height:auto;
-      }
-
-    }
-
-  </style>
-
+</style>
 </head>
 
 <body>
 
 <header>
 
-  <h1>ORDER FORM</h1>
+<h1>ORDER FORM</h1>
 
-  <input
-    type="text"
-    id="search"
-    placeholder="Search product..."
-  >
-
-  <div
-    class="cart-icon"
-    onclick="toggleCart()"
-  >
-    🛒
-    <span id="cart-count">0</span>
-  </div>
+<input
+type="text"
+id="search"
+placeholder="Search product..."
+>
 
 </header>
 
-<div class="container">
+<div id="products" class="product-grid"></div>
 
-  <div
-    id="products"
-    class="product-grid"
-  ></div>
+<div class="cart-icon" onclick="toggleCart()">
+🛒
+<span id="cart-count">0</span>
+</div>
 
-  <div
-    class="cart hidden"
-    id="cart"
-  >
+<div class="cart hidden" id="cart">
 
-    <div class="cart-header">
+<div class="cart-header">
+<h2>Shopping Cart</h2>
 
-      <h2>Shopping Cart</h2>
+<button onclick="toggleCart()">
+Close
+</button>
+</div>
 
-      <button onclick="toggleCart()">
-        Hide
-      </button>
+<div id="cart-items"></div>
 
-    </div>
+<h3>
+Total: ₱<span id="total">0</span>
+</h3>
 
-    <div id="cart-items"></div>
+<div class="checkout-form">
 
-    <h3>
-      Total: ₱<span id="total">0</span>
-    </h3>
+<input
+type="text"
+id="customer_name"
+placeholder="Customer Name"
+>
 
-    <div class="checkout-form">
+<input
+type="text"
+id="store_name"
+placeholder="Store Name"
+>
 
-      <input
-        type="text"
-        id="customer_name"
-        placeholder="Customer Name"
-      >
+<input
+type="text"
+id="address"
+placeholder="Complete Address"
+>
 
-      <input
-        type="text"
-        id="store_name"
-        placeholder="Store Name"
-      >
+<input
+type="text"
+id="cell_number"
+placeholder="Cellphone Number"
+>
 
-      <input
-        type="text"
-        id="address"
-        placeholder="Complete Address"
-      >
+<div class="gps-box" id="gps_location">
+GPS: Detecting...
+</div>
 
-      <input
-        type="text"
-        id="cell_number"
-        placeholder="Cellphone Number"
-      >
+<button
+class="checkout-btn"
+onclick="checkout()"
+>
+Checkout
+</button>
 
-      <div
-        class="gps-box"
-        id="gps_location"
-      >
-        GPS: Detecting location...
-      </div>
-
-      <button
-        class="checkout-btn"
-        onclick="checkout()"
-      >
-        Checkout
-      </button>
-
-    </div>
-
-  </div>
+<div id="receipt"></div>
 
 </div>
 
-<audio
-  id="addSound"
-  src="sounds/add.mp3"
-></audio>
+</div>
 
 <script>
+
+/* =========================
+SUPABASE
+========================= */
 
 const SUPABASE_URL =
 "https://gwqnvhbzvzfzryxxdmui.supabase.co";
@@ -342,12 +309,13 @@ const SUPABASE_KEY =
 
 const supabaseClient =
 supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
+SUPABASE_URL,
+SUPABASE_KEY
 );
 
-const productsDiv =
-document.getElementById("products");
+/* =========================
+VARIABLES
+========================= */
 
 let cart =
 JSON.parse(localStorage.getItem("cart")) || [];
@@ -357,477 +325,437 @@ let longitude = "";
 let gpsLocation = "Unavailable";
 let googleMapLink = "";
 
+const productsDiv =
+document.getElementById("products");
 
-// ======================
-// LOAD PRODUCTS
-// ======================
+/* =========================
+LOAD PRODUCTS
+========================= */
 
 async function loadProducts(){
 
-  try{
+try{
 
-    const {
-      data,
-      error
-    } = await supabaseClient
-      .from("products")
-      .select("*")
-      .order("id",{ascending:false});
+const { data, error } =
+await supabaseClient
+.from("products")
+.select("*");
 
-    if(error){
-
-      console.log(error);
-
-      productsDiv.innerHTML =
-      "<h2>Failed to load products</h2>";
-
-      return;
-    }
-
-    displayProducts(data);
-
-  }catch(err){
-
-    console.log(err);
-
-    productsDiv.innerHTML =
-    "<h2>Error loading products</h2>";
-  }
+if(error){
+console.log(error);
+alert("Failed to load products");
+return;
 }
 
+displayProducts(data);
 
-// ======================
-// DISPLAY PRODUCTS
-// ======================
+}catch(err){
+
+console.log(err);
+
+alert("Error loading products");
+}
+}
+
+/* =========================
+DISPLAY PRODUCTS
+========================= */
 
 function displayProducts(products){
 
-  productsDiv.innerHTML = "";
+productsDiv.innerHTML = "";
 
-  if(products.length === 0){
+products.forEach(product=>{
 
-    productsDiv.innerHTML =
-    "<h2>No products found</h2>";
+productsDiv.innerHTML += `
 
-    return;
-  }
+<div class="card">
 
-  products.forEach(product=>{
+<img src="${product.image_url}">
 
-    productsDiv.innerHTML += `
+<div class="card-body">
 
-      <div class="card">
+<h3>${product.name}</h3>
 
-        <img
-          src="${product.image_url}"
-          onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'"
-        >
+<p class="price">
+₱${product.price}
+</p>
 
-        <div class="card-body">
+<button
+class="add-btn"
+onclick='addToCart(
+${JSON.stringify(product)}
+)'
+>
 
-          <h3>${product.name}</h3>
+Add
 
-          <p class="price">
-            ₱${product.price}
-          </p>
+</button>
 
-          <button
-            class="add-btn"
-            onclick='addToCart(
-              ${product.id},
-              ${JSON.stringify(product.name)},
-              ${product.price},
-              ${JSON.stringify(product.image_url)}
-            )'
-          >
-            Add To Cart
-          </button>
-
-        </div>
-
-      </div>
-
-    `;
-  });
+</div>
+</div>
+`;
+});
 }
 
+/* =========================
+ADD TO CART
+========================= */
 
-// ======================
-// ADD TO CART
-// ======================
+function addToCart(product){
 
-function addToCart(
-  id,
-  name,
-  price,
-  image_url
-){
+const existing =
+cart.find(item=>item.id===product.id);
 
-  const sound =
-  document.getElementById("addSound");
+if(existing){
 
-  if(sound){
-    sound.play();
-  }
+existing.qty++;
 
-  const existing =
-  cart.find(item=>item.id===id);
+}else{
 
-  if(existing){
-
-    existing.qty++;
-
-  }else{
-
-    cart.push({
-      id,
-      name,
-      price:Number(price),
-      image_url,
-      qty:1
-    });
-  }
-
-  saveCart();
-
-  renderCart();
+cart.push({
+...product,
+qty:1
+});
 }
 
+saveCart();
+renderCart();
+}
 
-// ======================
-// SAVE CART
-// ======================
+/* =========================
+SAVE CART
+========================= */
 
 function saveCart(){
 
-  localStorage.setItem(
-    "cart",
-    JSON.stringify(cart)
-  );
+localStorage.setItem(
+"cart",
+JSON.stringify(cart)
+);
 }
 
-
-// ======================
-// RENDER CART
-// ======================
+/* =========================
+RENDER CART
+========================= */
 
 function renderCart(){
 
-  const cartItems =
-  document.getElementById("cart-items");
+const cartItems =
+document.getElementById("cart-items");
 
-  cartItems.innerHTML = "";
+cartItems.innerHTML = "";
 
-  let total = 0;
-  let count = 0;
+let total = 0;
+let count = 0;
 
-  cart.forEach((item,index)=>{
+cart.forEach((item,index)=>{
 
-    total += item.price * item.qty;
+total += item.price * item.qty;
+count += item.qty;
 
-    count += item.qty;
+cartItems.innerHTML += `
 
-    cartItems.innerHTML += `
+<div class="cart-item">
 
-      <div class="cart-item">
+<h4>${item.name}</h4>
 
-        <h4>${item.name}</h4>
+<p>₱${item.price}</p>
 
-        <p>₱${item.price}</p>
+<p>Qty: ${item.qty}</p>
 
-        <p>Qty: ${item.qty}</p>
+<div class="qty-controls">
 
-        <div class="qty-controls">
+<button onclick="changeQty(${index},-1)">
+-
+</button>
 
-          <button
-            onclick="changeQty(${index},-1)">
-            -
-          </button>
+<button onclick="changeQty(${index},1)">
++
+</button>
 
-          <button
-            onclick="changeQty(${index},1)">
-            +
-          </button>
+<button onclick="removeItem(${index})">
+Remove
+</button>
 
-          <button
-            onclick="removeItem(${index})">
-            Remove
-          </button>
+</div>
 
-        </div>
+</div>
+`;
+});
 
-      </div>
+document.getElementById("total")
+.innerText = total;
 
-    `;
-  });
-
-  document.getElementById("total")
-  .innerText = total;
-
-  document.getElementById("cart-count")
-  .innerText = count;
+document.getElementById("cart-count")
+.innerText = count;
 }
 
-
-// ======================
-// CHANGE QTY
-// ======================
+/* =========================
+CHANGE QTY
+========================= */
 
 function changeQty(index,change){
 
-  cart[index].qty += change;
+cart[index].qty += change;
 
-  if(cart[index].qty <= 0){
+if(cart[index].qty <= 0){
 
-    cart.splice(index,1);
-  }
-
-  saveCart();
-
-  renderCart();
+cart.splice(index,1);
 }
 
+saveCart();
+renderCart();
+}
 
-// ======================
-// REMOVE ITEM
-// ======================
+/* =========================
+REMOVE ITEM
+========================= */
 
 function removeItem(index){
 
-  cart.splice(index,1);
+cart.splice(index,1);
 
-  saveCart();
-
-  renderCart();
+saveCart();
+renderCart();
 }
 
-
-// ======================
-// TOGGLE CART
-// ======================
+/* =========================
+TOGGLE CART
+========================= */
 
 function toggleCart(){
 
-  document.getElementById("cart")
-  .classList.toggle("hidden");
+document.getElementById("cart")
+.classList.toggle("hidden");
 }
 
+/* =========================
+GPS LOCATION
+========================= */
 
-// ======================
-// RECEIPT
-// ======================
+function detectLocation(){
 
-function generateReceipt(){
+if(!navigator.geolocation){
 
-  return "RCPT-" + Date.now();
+document.getElementById(
+"gps_location"
+).innerHTML =
+"GPS Not Supported";
+
+return;
 }
 
+navigator.geolocation.getCurrentPosition(
 
-// ======================
-// GPS DETECT
-// ======================
+(position)=>{
 
-async function detectLocation(){
+latitude =
+position.coords.latitude;
 
-  const gpsBox =
-  document.getElementById("gps_location");
+longitude =
+position.coords.longitude;
 
-  if(!navigator.geolocation){
+gpsLocation =
+`${latitude}, ${longitude}`;
 
-    gpsBox.innerHTML =
-    "GPS Not Supported";
+googleMapLink =
+`https://www.google.com/maps?q=${latitude},${longitude}`;
 
-    return;
-  }
+document.getElementById(
+"gps_location"
+).innerHTML =
 
-  navigator.geolocation.getCurrentPosition(
+`GPS Captured
+<br><br>
+<a
+href="${googleMapLink}"
+target="_blank"
+style="color:yellow;"
+>
+Open Google Maps
+</a>`;
 
-    async(position)=>{
+},
 
-      latitude =
-      position.coords.latitude;
+(error)=>{
 
-      longitude =
-      position.coords.longitude;
+document.getElementById(
+"gps_location"
+).innerHTML =
+"GPS Permission Denied";
 
-      gpsLocation =
-      `${latitude}, ${longitude}`;
-
-      googleMapLink =
-      `https://www.google.com/maps?q=${latitude},${longitude}`;
-
-      gpsBox.innerHTML = `
-        GPS Captured<br><br>
-        <a
-          href="${googleMapLink}"
-          target="_blank"
-          style="color:yellow;"
-        >
-          Open Google Maps
-        </a>
-      `;
-    },
-
-    (error)=>{
-
-      gpsBox.innerHTML =
-      "GPS Permission Denied";
-
-      console.log(error);
-    },
-
-    {
-      enableHighAccuracy:true,
-      timeout:10000
-    }
-
-  );
+console.log(error);
 }
 
+);
+}
 
-// ======================
-// CHECKOUT
-// ======================
+/* =========================
+CHECKOUT
+========================= */
 
 async function checkout(){
 
-  if(cart.length === 0){
+if(cart.length===0){
 
-    alert("Cart is empty");
+alert("Cart is empty");
+return;
+}
 
-    return;
-  }
+const customer_name =
+document.getElementById(
+"customer_name"
+).value;
 
-  const customer_name =
-  document.getElementById(
-    "customer_name"
-  ).value;
+const store_name =
+document.getElementById(
+"store_name"
+).value;
 
-  const store_name =
-  document.getElementById(
-    "store_name"
-  ).value;
+const address =
+document.getElementById(
+"address"
+).value;
 
-  const address =
-  document.getElementById(
-    "address"
-  ).value;
+const cell_number =
+document.getElementById(
+"cell_number"
+).value;
 
-  const cell_number =
-  document.getElementById(
-    "cell_number"
-  ).value;
+if(
+!customer_name ||
+!store_name ||
+!address ||
+!cell_number
+){
 
-  if(
-    !customer_name ||
-    !store_name ||
-    !address ||
-    !cell_number
-  ){
+alert("Please complete all fields");
+return;
+}
 
-    alert("Please fill all fields");
+/* SAVE CUSTOMER */
 
-    return;
-  }
+const customerSave =
+await supabaseClient
+.from("customers")
+.insert([{
 
-  const customerResult =
-  await supabaseClient
-    .from("customers")
-    .insert([{
+customer_name,
+store_name,
+address,
+cell_number,
+gps_location:gpsLocation,
+latitude,
+longitude,
+google_map:googleMapLink
 
-      customer_name,
-      store_name,
-      address,
-      cell_number,
-      gps_location:gpsLocation,
-      latitude,
-      longitude,
-      google_map:googleMapLink
+}]);
 
-    }]);
+if(customerSave.error){
 
-  if(customerResult.error){
+console.log(customerSave.error);
 
-    console.log(customerResult.error);
+alert("Failed to save customer");
 
-    alert("Failed to save customer");
+return;
+}
 
-    return;
-  }
+/* SAVE SALES */
 
-  const receipt =
-  generateReceipt();
+const receipt =
+"RCPT-" + Date.now();
 
-  let grandTotal = 0;
+let grandTotal = 0;
 
-  for(const item of cart){
+for(const item of cart){
 
-    const total =
-    item.price * item.qty;
+const total =
+item.price * item.qty;
 
-    grandTotal += total;
+grandTotal += total;
 
-    await supabaseClient
-      .from("sales")
-      .insert([{
+await supabaseClient
+.from("sales")
+.insert([{
 
-        receipt_id:receipt,
-        products:item.name,
-        qty:item.qty,
-        price:item.price,
-        total,
-        customers:customer_name
+receipt_id:receipt,
+products:item.name,
+qty:item.qty,
+price:item.price,
+total,
+customers:customer_name
 
-      }]);
-  }
+}]);
+}
 
-  alert(
-`Checkout Success
+/* RECEIPT */
+
+document.getElementById("receipt")
+.innerHTML = `
+
+<div class="receipt-box">
+
+RECEIPT
+------------------
 
 Receipt:
 ${receipt}
 
+Customer:
+${customer_name}
+
 Total:
-₱${grandTotal}`
-  );
+₱${grandTotal}
 
-  cart = [];
+Items:
+${cart.map(item=>
+`${item.name} x${item.qty}`
+).join("<br>")}
 
-  saveCart();
+</div>
+`;
 
-  renderCart();
+alert("Checkout Success");
+
+/* CLEAR CART */
+
+cart = [];
+
+saveCart();
+
+renderCart();
 }
 
-
-// ======================
-// SEARCH
-// ======================
+/* =========================
+SEARCH
+========================= */
 
 document.getElementById("search")
 .addEventListener("input",(e)=>{
 
-  const keyword =
-  e.target.value.toLowerCase();
+const keyword =
+e.target.value.toLowerCase();
 
-  const cards =
-  document.querySelectorAll(".card");
+const cards =
+document.querySelectorAll(".card");
 
-  cards.forEach(card=>{
+cards.forEach(card=>{
 
-    const name =
-    card.innerText.toLowerCase();
+const name =
+card.innerText.toLowerCase();
 
-    card.style.display =
-    name.includes(keyword)
-    ? "block"
-    : "none";
-  });
+card.style.display =
+name.includes(keyword)
+? "block"
+: "none";
+
+});
 });
 
-
-// ======================
-// START
-// ======================
+/* =========================
+START
+========================= */
 
 detectLocation();
 
