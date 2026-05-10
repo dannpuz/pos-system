@@ -8,17 +8,35 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
-body{background:#0f172a;color:white}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+body{
+  background:#0f172a;
+  color:white;
+}
 
 /* HEADER */
 header{
-  position:sticky;top:0;z-index:10;
+  position:sticky;
+  top:0;
+  z-index:10;
   background:#111827;
   padding:10px;
-  display:flex;gap:10px;
+  display:flex;
+  gap:10px;
 }
-#search{flex:1;padding:10px;border:none;border-radius:8px}
+
+#search{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+}
 
 /* GRID */
 .product-grid{
@@ -27,18 +45,52 @@ header{
   padding:10px;
   grid-template-columns:repeat(5,1fr);
 }
-@media(max-width:1024px){.product-grid{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:768px){.product-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:480px){.product-grid{grid-template-columns:repeat(2,1fr)}}
+
+@media(max-width:1024px){
+  .product-grid{
+    grid-template-columns:repeat(4,1fr);
+  }
+}
+
+@media(max-width:768px){
+  .product-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:480px){
+  .product-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
 
 /* CARD */
-.card{background:white;color:black;border-radius:10px;overflow:hidden}
-.card img{width:100%;height:100px;object-fit:cover}
-.card-body{padding:8px}
-.price{color:#2563eb;font-weight:bold}
+.card{
+  background:white;
+  color:black;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.card img{
+  width:100%;
+  height:120px;
+  object-fit:cover;
+}
+
+.card-body{
+  padding:8px;
+}
+
+.price{
+  color:#2563eb;
+  font-weight:bold;
+  margin:5px 0;
+}
+
 .add-btn{
   width:100%;
-  padding:8px;
+  padding:10px;
   border:none;
   background:#3b82f6;
   color:white;
@@ -46,21 +98,30 @@ header{
   cursor:pointer;
 }
 
-/* CART ICON */
+/* CART BUTTON */
 .cart-fab{
-  position:fixed;bottom:20px;right:20px;
-  width:60px;height:60px;
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:60px;
+  height:60px;
   border-radius:50%;
   background:#2563eb;
-  display:flex;align-items:center;justify-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-size:20px;
   z-index:1000;
+  cursor:pointer;
 }
 
 /* CART PANEL */
 .cart{
-  position:fixed;right:0;top:0;
-  width:320px;height:100vh;
+  position:fixed;
+  right:0;
+  top:0;
+  width:320px;
+  height:100vh;
   background:#111827;
   padding:10px;
   overflow:auto;
@@ -69,331 +130,498 @@ header{
 /* CART ITEM */
 .item{
   background:#1f2937;
-  padding:8px;
-  margin-bottom:8px;
+  padding:10px;
+  margin-bottom:10px;
   border-radius:8px;
 }
-.qty{display:flex;gap:8px;align-items:center;margin-top:5px}
-.qty button{padding:4px 10px;border:none;border-radius:5px}
 
-/* CHECKOUT */
+.qty{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-top:5px;
+}
+
+.qty button{
+  padding:4px 10px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+/* INPUTS */
 input{
   width:100%;
   padding:10px;
-  margin-top:5px;
+  margin-top:8px;
   border:none;
   border-radius:6px;
+}
+
+/* RECEIPT */
+#receiptModal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:2000;
+  align-items:center;
+  justify-content:center;
+}
+
+.receipt-box{
+  background:white;
+  color:black;
+  padding:20px;
+  width:320px;
+  border-radius:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="receiptModal" style="
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,0.7);
-z-index:2000;
-align-items:center;
-justify-content:center;
-">
-
-  <div style="background:white;color:black;padding:20px;width:300px;border-radius:10px;">
+<!-- RECEIPT -->
+<div id="receiptModal">
+  <div class="receipt-box">
     <h3>Receipt</h3>
+    <br>
     <div id="receiptContent"></div>
-    <button onclick="closeReceipt()" class="add-btn">Close</button>
+    <br>
+    <button onclick="closeReceipt()" class="add-btn">
+      Close
+    </button>
   </div>
-
 </div>
 
+<!-- HEADER -->
 <header>
-<input id="search" placeholder="Search product...">
+  <input id="search" placeholder="Search product...">
 </header>
 
+<!-- PRODUCTS -->
 <div id="products" class="product-grid"></div>
 
-<div class="cart-fab" id="cartBtn">🛒 <span id="count">0</span></div>
+<!-- CART BUTTON -->
+<div class="cart-fab" id="cartBtn">
+  🛒 <span id="count">0</span>
+</div>
 
+<!-- CART PANEL -->
 <div class="cart" id="cartPanel" style="display:none;">
-<h3>Cart</h3>
-<div id="cart"></div>
 
-<input id="customer_name" placeholder="Name">
-<input id="store_name" placeholder="Store Name">
-<input id="address" placeholder="Address">
-<input id="cell_number" placeholder="Phone">
+  <h3>Cart</h3>
+  <br>
 
+  <div id="cart"></div>
 
+  <input id="customer_name" placeholder="Customer Name">
 
-<button onclick="checkout()" class="add-btn">Checkout</button>
+  <input id="store_name" placeholder="Store Name">
+
+  <input id="address" placeholder="Address">
+
+  <input id="cell_number" placeholder="Phone Number">
+
+  <br><br>
+
+  <button onclick="checkout()" class="add-btn">
+    Checkout
+  </button>
+
 </div>
 
 <script>
 
+/* =========================================
+   SUPABASE
+========================================= */
+
 const supabaseClient = supabase.createClient(
-"https://gwqnvhbzvzfzryxxdmui.supabase.co",
-"sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
+  "https://gwqnvhbzvzfzryxxdmui.supabase.co",
+  "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
 );
 
-/* STATE */
+/* =========================================
+   STATE
+========================================= */
+
 let products = [];
 let cart = [];
 let gps = "Unavailable";
 
-/* LOAD PRODUCTS (FAST) */
+/* =========================================
+   GPS
+========================================= */
+
+navigator.geolocation?.getCurrentPosition(
+  pos => {
+    gps = `${pos.coords.latitude},${pos.coords.longitude}`;
+  },
+  () => {
+    gps = "Unavailable";
+  }
+);
+
+/* =========================================
+   LOAD PRODUCTS
+========================================= */
+
 async function loadProducts(){
-  const {data} = await supabaseClient.from("products").select("*");
+
+  const { data, error } = await supabaseClient
+    .from("products")
+    .select("*");
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
   products = data || [];
+
   renderProducts();
 }
 
-/* FAST PRODUCT RENDER (NO innerHTML LOOP) */
+/* =========================================
+   RENDER PRODUCTS
+========================================= */
+
 function renderProducts(){
+
   const box = document.getElementById("products");
-  box.textContent = "";
 
-  const frag = document.createDocumentFragment();
+  box.innerHTML = "";
 
-  products.forEach(p=>{
+  const keyword = document
+    .getElementById("search")
+    .value
+    .toLowerCase();
+
+  const filtered = products.filter(p =>
+    p.name?.toLowerCase().includes(keyword)
+  );
+
+  filtered.forEach(p => {
+
     const div = document.createElement("div");
+
     div.className = "card";
+
     div.innerHTML = `
-      <img src="${p.image_url}">
+      <img src="${p.image_url || ''}">
+
       <div class="card-body">
+
         <h4>${p.name}</h4>
-        <p class="price">₱${p.price}</p>
-        <button class="add-btn" data-id="${p.id}">Add</button>
+
+        <p class="price">
+          ₱${Number(p.price).toLocaleString()}
+        </p>
+
+        <button class="add-btn" data-id="${p.id}">
+          Add
+        </button>
+
       </div>
     `;
-    frag.appendChild(div);
-  });
 
-  box.appendChild(frag);
+    box.appendChild(div);
+
+  });
 }
 
-/* EVENT DELEGATION (VERY FAST) */
-document.getElementById("products")
-.addEventListener("click",(e)=>{
+/* =========================================
+   SEARCH
+========================================= */
+
+document
+.getElementById("search")
+.addEventListener("input", renderProducts);
+
+/* =========================================
+   ADD TO CART
+========================================= */
+
+document
+.getElementById("products")
+.addEventListener("click", (e) => {
+
   if(!e.target.classList.contains("add-btn")) return;
 
   const id = Number(e.target.dataset.id);
-  const p = products.find(x=>x.id===id);
 
-  const f = cart.find(i=>i.id===id);
-  if(f) f.qty++;
-  else cart.push({...p,qty:1});
+  const product = products.find(p => p.id === id);
+
+  if(!product) return;
+
+  const existing = cart.find(i => i.id === id);
+
+  if(existing){
+    existing.qty++;
+  }else{
+    cart.push({
+      ...product,
+      qty:1
+    });
+  }
 
   renderCart();
 });
 
-/* CART RENDER (FAST STRING BUILD ONLY ON CART) */
+/* =========================================
+   RENDER CART
+========================================= */
+
 function renderCart(){
+
   const box = document.getElementById("cart");
 
   let html = "";
   let count = 0;
 
-  cart.forEach((i,idx)=>{
-    count += i.qty;
+  cart.forEach((item, index) => {
+
+    count += item.qty;
 
     html += `
       <div class="item">
-        <b>${i.name}</b><br>
-        ₱${i.price}
+
+        <b>${item.name}</b><br>
+
+        ₱${item.price}
 
         <div class="qty">
-          <button onclick="minus(${idx})">-</button>
-          <span>${i.qty}</span>
-          <button onclick="plus(${idx})">+</button>
+
+          <button onclick="minus(${index})">-</button>
+
+          <span>${item.qty}</span>
+
+          <button onclick="plus(${index})">+</button>
+
         </div>
+
       </div>
     `;
   });
 
   box.innerHTML = html;
+
   document.getElementById("count").innerText = count;
 }
 
-/* QTY */
-function minus(i){
-  cart[i].qty--;
-  if(cart[i].qty<=0) cart.splice(i,1);
+/* =========================================
+   QUANTITY
+========================================= */
+
+function minus(index){
+
+  cart[index].qty--;
+
+  if(cart[index].qty <= 0){
+    cart.splice(index,1);
+  }
+
   renderCart();
 }
 
-function plus(i){
-  cart[i].qty++;
+function plus(index){
+
+  cart[index].qty++;
+
   renderCart();
 }
 
-/* CART TOGGLE */
-document.getElementById("cartBtn").onclick = ()=>{
-  const c = document.getElementById("cartPanel");
-  c.style.display = c.style.display==="block"?"none":"block";
+/* =========================================
+   TOGGLE CART
+========================================= */
+
+document.getElementById("cartBtn").onclick = () => {
+
+  const panel = document.getElementById("cartPanel");
+
+  panel.style.display =
+    panel.style.display === "block"
+    ? "none"
+    : "block";
 };
 
-/* GPS (SAFE) */
-navigator.geolocation?.getCurrentPosition(
-pos=>{
-  gps = `${pos.coords.latitude},${pos.coords.longitude}`;
-},
-()=> gps="Unavailable"
-);
+/* =========================================
+   CHECKOUT
+========================================= */
 
-/* CHECKOUT */
 async function checkout(){
 
-if(cart.length === 0){
-  return alert("Empty cart");
-}
+  if(cart.length === 0){
+    return alert("Cart is empty");
+  }
 
-const name = document.getElementById("customer_name").value.trim();
-const address = document.getElementById("address").value.trim();
-const phone = document.getElementById("cell_number").value.trim();
-const store_name = document.getElementById("store_name").value.trim();
+  const customer_name = document
+    .getElementById("customer_name")
+    .value
+    .trim();
 
-/* VALIDATION */
-if(!name || !address || !phone || !store_name){
-  return alert("Complete all customer details");
-}
+  const store_name = document
+    .getElementById("store_name")
+    .value
+    .trim();
 
-if(!/^\d{11}$/.test(phone)){
-  return alert("Phone number must be exactly 11 digits");
-}}
+  const address = document
+    .getElementById("address")
+    .value
+    .trim();
 
-/* ORDER OBJECT */
-const order = {
-  customer_name: name,
-  cell_number: phone,
-  gps,
-  items: cart,
-  status: "pending",
-  created_at: new Date().toISOString()
-};
+  const cell_number = document
+    .getElementById("cell_number")
+    .value
+    .trim();
 
-/* OFFLINE */
-if(!navigator.onLine){
+  /* VALIDATION */
 
-  localStorage.setItem(
-    "queue",
-    JSON.stringify([
-      ...JSON.parse(localStorage.getItem("queue") || "[]"),
-      order
-    ])
-  );
+  if(
+    !customer_name ||
+    !store_name ||
+    !address ||
+    !cell_number
+  ){
+    return alert("Complete all customer details");
+  }
 
-  return alert("Saved offline");
+  if(!/^\d{11}$/.test(cell_number)){
+    return alert("Phone number must be exactly 11 digits");
+  }
+
+  /* ORDER */
+
+  const order = {
+    customer_name,
+    cell_number,
+    gps,
+    items: cart,
+    status: "pending",
+    created_at: new Date().toISOString()
+  };
+
+  /* CUSTOMER */
+
+  const customerData = {
+    customer_name,
+    store_name,
+    address,
+    cell_number
+  };
+
+  /* SAVE CUSTOMER */
+
+  const { error: customerError } = await supabaseClient
+    .from("customers")
+    .upsert([customerData], {
+      onConflict:"cell_number"
+    });
+
+  if(customerError){
+    console.error(customerError);
+    return alert(customerError.message);
+  }
+
+  /* SAVE ORDER */
+
+  const { data, error } = await supabaseClient
+    .from("sales")
+    .insert([order])
+    .select()
+    .single();
+
+  if(error){
+    console.error(error);
+    return alert(error.message);
+  }
+
+  /* RECEIPT */
+
+  showReceipt(data);
+
+  /* OPTIONAL EMAIL */
+
+  try{
+    await supabaseClient.functions.invoke(
+      "send-order-email",
+      {
+        body:data
+      }
+    );
+  }catch(e){
+    console.log("Email function not available");
+  }
+
+  /* CLEAR */
+
+  cart = [];
+
+  renderCart();
+
+  document.getElementById("customer_name").value = "";
+  document.getElementById("store_name").value = "";
+  document.getElementById("address").value = "";
+  document.getElementById("cell_number").value = "";
+
+  alert("Order placed successfully");
 }
 
 /* =========================================
-   SAVE CUSTOMER TO customers TABLE
+   RECEIPT
 ========================================= */
 
-
- const customerData = {
-  customer_name: name,
-  address,
-  cell_number: phone,
-  store_name
-};
-
-/* UPSERT CUSTOMER */
-const { error: customerError } = await supabaseClient
-  .from("customers")
-  .upsert([customerData], {
-    onConflict: "cell_number"
-  });
-
-if(customerError){
-  console.error(customerError);
-  return alert(customerError.message);
-}
-
-/* =========================================
-   SAVE ORDER TO sales TABLE
-========================================= */
-
-const { data, error } = await supabaseClient
-  .from("sales")
-  .insert([order])
-  .select()
-  .single();
-
-if(error){
-  console.error(error);
-  return alert(error.message);
-}
-
-/* =========================================
-   SHOW RECEIPT
-========================================= */
-
-showReceipt(data);
-
-/* =========================================
-   OPTIONAL EMAIL
-========================================= */
-
-try{
-  await supabaseClient.functions.invoke(
-    "send-order-email",
-    { body: data }
-  );
-}catch(e){
-  console.log("Email error:", e.message);
-}
-
-/* =========================================
-   CLEAR CART
-========================================= */
-
-cart = [];
-renderCart();
-
-document.getElementById("customer_name").value = "";
-ocument.getElementById("store_name").value = "";
-document.getElementById("address").value = "";
-document.getElementById("cell_number").value = "";
-
-
-}
 function showReceipt(order){
 
-let total = 0;
+  let total = 0;
 
-let itemsHtml = order.items.map(i => {
+  const itemsHtml = order.items.map(item => {
 
-  const subtotal = i.price * i.qty;
-  total += subtotal;
+    const subtotal = item.price * item.qty;
 
-  return `
-    ${i.customer_name} x${i.qty}
-    = ₱${subtotal}
+    total += subtotal;
+
+    return `
+      ${item.name} x${item.qty}
+      = ₱${subtotal}
+    `;
+  }).join("<br>");
+
+  document.getElementById("receiptContent").innerHTML = `
+    <b>Name:</b>
+    ${order.customer_name}
+    <br><br>
+
+    <b>Phone:</b>
+    ${order.cell_number}
+    <br><br>
+
+    <b>Items:</b>
+    <br>
+    ${itemsHtml}
+
+    <br><br>
+
+    <b>Total:</b>
+    ₱${total}
   `;
-}).join("<br>");
 
-document.getElementById("receiptContent").innerHTML = `
-<b>Name:</b> ${order.customer_name}<br>
-<b>Phone:</b> ${order.cell_number}<br><br>
-
-<b>Items:</b><br>
-${itemsHtml}
-
-<br><br>
-
-<b>Total:</b> ₱${total}
-`;
-
-document.getElementById("receiptModal").style.display = "flex";
+  document.getElementById("receiptModal").style.display = "flex";
 }
 
 function closeReceipt(){
+
   document.getElementById("receiptModal").style.display = "none";
 }
-/* INIT */
+
+/* =========================================
+   INIT
+========================================= */
+
 loadProducts();
 
 </script>
+
 </body>
 </html>
