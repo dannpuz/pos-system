@@ -3,22 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
   <title>POS System</title>
 
   <link rel="stylesheet" href="style.css">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+
+    .checkout-form{
+      background:#111827;
+      padding:20px;
+      border-radius:15px;
+      margin-top:20px;
+    }
+
+    .checkout-form input{
+      width:100%;
+      padding:12px;
+      margin-bottom:12px;
+      border:none;
+      border-radius:10px;
+    }
+
+    .gps-box{
+      background:#1f2937;
+      padding:10px;
+      border-radius:10px;
+      margin-bottom:10px;
+      font-size:14px;
+    }
+
+  </style>
+
 </head>
 <body>
 
 <header>
+
   <h1>CUSTOMERS ORDER FORM</h1>
 
-  <input type="text" id="search" placeholder="Search item...">
+  <input
+    type="text"
+    id="search"
+    placeholder="Search item..."
+  >
 
   <div class="cart-icon" onclick="toggleCart()">
     🛒 <span id="cart-count">0</span>
   </div>
+
 </header>
 
 <div class="container">
@@ -28,17 +63,59 @@
   <div class="cart hidden" id="cart">
 
     <div class="cart-header">
+
       <h2>Shopping Cart</h2>
-      <button onclick="toggleCart()">Hide</button>
+
+      <button onclick="toggleCart()">
+        Hide
+      </button>
+
     </div>
 
     <div id="cart-items"></div>
 
-    <h3>Total: ₱<span id="total">0</span></h3>
+    <h3>
+      Total: ₱<span id="total">0</span>
+    </h3>
 
-    <button class="checkout-btn" onclick="checkout()">
-      Checkout
-    </button>
+    <div class="checkout-form">
+
+      <input
+        type="text"
+        id="customer_name"
+        placeholder="Name of Customer"
+      >
+
+      <input
+        type="text"
+        id="store_name"
+        placeholder="Store Name"
+      >
+
+      <input
+        type="text"
+        id="address"
+        placeholder="Complete Address"
+      >
+
+      <input
+        type="text"
+        id="cell_number"
+        placeholder="Cellphone Number"
+      >
+
+      <div class="gps-box" id="gps_location">
+        GPS: Detecting location...
+      </div>
+
+      <button
+        class="checkout-btn"
+        onclick="checkout()"
+      >
+        Checkout
+      </button>
+
+    </div>
 
   </div>
 
@@ -46,7 +123,476 @@
 
 <audio id="addSound" src="sounds/add.mp3"></audio>
 
-<script src="app.js"></script>
+<script>
+
+const SUPABASE_URL =
+"https://gwqnvhbzvzfzryxxdmui.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw";
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+let cart =
+JSON.parse(localStorage.getItem("cart")) || [];
+
+let gpsLocation = "Unavailable";
+
+const productsDiv =
+document.getElementById("products");
+
+
+// =========================
+// LOAD PRODUCTS
+// =========================
+
+async function loadProducts(){
+
+  const { data, error } =
+  await supabaseClient
+    .from("products")
+    .select("*");
+
+  if(error){
+
+    console.log(error);
+
+    return;
+  }
+
+  displayProducts(data);
+}
+
+
+// =========================
+// DISPLAY PRODUCTS
+// =========================
+
+function displayProducts(products){
+
+  productsDiv.innerHTML = "";
+
+  products.forEach(product => {
+
+    productsDiv.innerHTML += `
+
+      <div class="card">
+
+        <img src="${product.image_url}" />
+
+        <div class="card-body">
+
+          <h3>${product.name}</h3>
+
+          <p class="price">
+            ₱${product.price}
+          </p>
+
+          <button
+            class="add-btn"
+
+            onclick="addToCart(
+              ${product.id},
+              '${product.name}',
+              ${product.price},
+              '${product.image_url}'
+            )">
+
+            🛒 Add to Cart
+
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+  });
+}
+
+
+// =========================
+// ADD TO CART
+// =========================
+
+function addToCart(
+  id,
+  name,
+  price,
+  image_url
+){
+
+  document.getElementById("addSound").play();
+
+  const existing =
+  cart.find(item => item.id === id);
+
+  if(existing){
+
+    existing.qty++;
+
+  }else{
+
+    cart.push({
+      id,
+      name,
+      price:Number(price),
+      image_url,
+      qty:1
+    });
+  }
+
+  saveCart();
+
+  renderCart();
+}
+
+
+// =========================
+// SAVE CART
+// =========================
+
+function saveCart(){
+
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
+}
+
+
+// =========================
+// RENDER CART
+// =========================
+
+function renderCart(){
+
+  const cartItems =
+  document.getElementById("cart-items");
+
+  cartItems.innerHTML = "";
+
+  let total = 0;
+  let count = 0;
+
+  cart.forEach((item,index)=>{
+
+    total += item.price * item.qty;
+
+    count += item.qty;
+
+    cartItems.innerHTML += `
+
+      <div class="cart-item">
+
+        <h4>${item.name}</h4>
+
+        <p>₱${item.price}</p>
+
+        <p>Qty: ${item.qty}</p>
+
+        <div class="qty-controls">
+
+          <button
+            onclick="changeQty(${index},-1)">
+            -
+          </button>
+
+          <button
+            onclick="changeQty(${index},1)">
+            +
+          </button>
+
+          <button
+            onclick="removeItem(${index})">
+            Remove
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+  });
+
+  document.getElementById("total")
+  .innerText = total;
+
+  document.getElementById("cart-count")
+  .innerText = count;
+}
+
+
+// =========================
+// CHANGE QTY
+// =========================
+
+function changeQty(index,change){
+
+  cart[index].qty += change;
+
+  if(cart[index].qty <= 0){
+
+    cart.splice(index,1);
+  }
+
+  saveCart();
+
+  renderCart();
+}
+
+
+// =========================
+// REMOVE ITEM
+// =========================
+
+function removeItem(index){
+
+  cart.splice(index,1);
+
+  saveCart();
+
+  renderCart();
+}
+
+
+// =========================
+// TOGGLE CART
+// =========================
+
+function toggleCart(){
+
+  document.getElementById("cart")
+  .classList.toggle("hidden");
+}
+
+
+// =========================
+// RECEIPT
+// =========================
+
+function generateReceipt(){
+
+  return "RCPT-" + Date.now();
+}
+
+
+// =========================
+// GPS LOCATION
+// =========================
+
+function detectLocation(){
+
+  if(navigator.geolocation){
+
+    navigator.geolocation.getCurrentPosition(
+
+      (position)=>{
+
+        const lat =
+        position.coords.latitude;
+
+        const lng =
+        position.coords.longitude;
+
+        gpsLocation =
+        `${lat}, ${lng}`;
+
+        document.getElementById(
+          "gps_location"
+        ).innerText =
+        "GPS: " + gpsLocation;
+      },
+
+      (error)=>{
+
+        document.getElementById(
+          "gps_location"
+        ).innerText =
+        "GPS Permission Denied";
+      }
+
+    );
+
+  }else{
+
+    document.getElementById(
+      "gps_location"
+    ).innerText =
+    "GPS Not Supported";
+  }
+}
+
+
+// =========================
+// CHECKOUT
+// =========================
+
+async function checkout(){
+
+  if(cart.length === 0){
+
+    alert("Cart is empty");
+
+    return;
+  }
+
+  const customer_name =
+  document.getElementById(
+    "customer_name"
+  ).value;
+
+  const store_name =
+  document.getElementById(
+    "store_name"
+  ).value;
+
+  const address =
+  document.getElementById(
+    "address"
+  ).value;
+
+  const cell_number =
+  document.getElementById(
+    "cell_number"
+  ).value;
+
+  if(
+    !customer_name ||
+    !store_name ||
+    !address ||
+    !cell_number
+  ){
+
+    alert("Please fill all fields");
+
+    return;
+  }
+
+  // =====================
+  // SAVE CUSTOMER
+  // =====================
+
+  const customerResult =
+  await supabaseClient
+    .from("customers")
+    .insert([{
+
+      customer_name,
+      store_name,
+      address,
+      cell_number,
+      gps_location:gpsLocation
+
+    }]);
+
+  if(customerResult.error){
+
+    console.log(customerResult.error);
+
+    alert("Failed to save customer");
+
+    return;
+  }
+
+  const receipt =
+  generateReceipt();
+
+  let grandTotal = 0;
+
+  // =====================
+  // SAVE SALES
+  // =====================
+
+  for(const item of cart){
+
+    const total =
+    item.price * item.qty;
+
+    grandTotal += total;
+
+    const saleResult =
+    await supabaseClient
+      .from("sales")
+      .insert([{
+
+        receipt_id:receipt,
+        products:item.name,
+        qty:item.qty,
+        price:item.price,
+        total:total,
+        customers:customer_name
+
+      }]);
+
+    if(saleResult.error){
+
+      console.log(saleResult.error);
+
+      alert("Failed to save sales");
+
+      return;
+    }
+  }
+
+  alert(
+`Checkout Success
+
+Receipt:
+${receipt}
+
+Total:
+₱${grandTotal}`
+  );
+
+  cart = [];
+
+  saveCart();
+
+  renderCart();
+}
+
+
+// =========================
+// SEARCH
+// =========================
+
+document.getElementById("search")
+.addEventListener("input",(e)=>{
+
+  const keyword =
+  e.target.value.toLowerCase();
+
+  const cards =
+  document.querySelectorAll(".card");
+
+  cards.forEach(card=>{
+
+    const name =
+    card.innerText.toLowerCase();
+
+    card.style.display =
+    name.includes(keyword)
+    ? "block"
+    : "none";
+  });
+});
+
+
+// =========================
+// START
+// =========================
+
+detectLocation();
+
+loadProducts();
+
+renderCart();
+
+</script>
 
 </body>
 </html>
