@@ -160,6 +160,11 @@ function generateReceipt(){
 
 async function checkout(){
 
+  if(cart.length === 0){
+    alert("Cart is empty");
+    return;
+  }
+
   const customerName = prompt("Customer Name");
 
   if(!customerName) return;
@@ -170,34 +175,48 @@ async function checkout(){
 
   for(const item of cart){
 
-    const total = item.price * item.qty;
+    const total =
+      Number(item.price) * Number(item.qty);
 
     grandTotal += total;
 
-    await supabaseClient
+    const { data, error } = await supabaseClient
       .from("sales")
       .insert([{
 
         receipt_id: receipt,
         products: item.name,
         qty: item.qty,
-        price: item.price,
+        price: Number(item.price),
         total: total,
         customers: customerName
 
       }]);
+
+    if(error){
+
+      console.error("SUPABASE ERROR:", error);
+
+      alert(
+        "Failed to save checkout.\nCheck console."
+      );
+
+      return;
+    }
   }
 
   alert(
-    `Checkout Success\nReceipt: ${receipt}\nTotal: ₱${grandTotal}`
+    `Checkout Success
+Receipt: ${receipt}
+Total: ₱${grandTotal}`
   );
 
   cart = [];
 
   saveCart();
+
   renderCart();
 }
-
 document.getElementById("search")
 .addEventListener("input",(e)=>{
 
