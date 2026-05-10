@@ -119,10 +119,11 @@ justify-content:center;
 <h3>Cart</h3>
 <div id="cart"></div>
 
-<input id="name" placeholder="Name">
+<input id="customer_name" placeholder="Name">
 <input id="store_name" placeholder="Store Name">
 <input id="address" placeholder="Address">
-<input id="phone" placeholder="Phone">
+<input id="cell_number" placeholder="Phone">
+
 
 
 <button onclick="checkout()" class="add-btn">Checkout</button>
@@ -160,7 +161,7 @@ function renderProducts(){
     div.innerHTML = `
       <img src="${p.image_url}">
       <div class="card-body">
-        <h4>${p.name}</h4>
+        <h4>${p.customer_name}</h4>
         <p class="price">₱${p.price}</p>
         <button class="add-btn" data-id="${p.id}">Add</button>
       </div>
@@ -198,7 +199,7 @@ function renderCart(){
 
     html += `
       <div class="item">
-        <b>${i.name}</b><br>
+        <b>${i.customer_name}</b><br>
         ₱${i.price}
 
         <div class="qty">
@@ -247,24 +248,24 @@ if(cart.length === 0){
   return alert("Empty cart");
 }
 
-const name = document.getElementById("name").value.trim();
+const name = document.getElementById("customer_name").value.trim();
 const address = document.getElementById("address").value.trim();
-const phone = document.getElementById("phone").value.trim();
+const phone = document.getElementById("cell_number").value.trim();
 const store_name = document.getElementById("store_name").value.trim();
 
 /* VALIDATION */
-if(!name || !address || !phone || !store_name){
+if(!customer_name || !address || !cell_number || !store_name){
   return alert("Complete all customer details");
 }
 
-if(!/^\d{11,}$/.test(phone)){
+if(!/^\d{11,}$/.test(cell_number)){
   return alert("Phone number must be at least 11 digits");
 }
 
 /* ORDER OBJECT */
 const order = {
   customer_name: name,
-  phone,
+  cell_number,
   gps,
   items: cart,
   status: "pending",
@@ -293,7 +294,7 @@ if(!navigator.onLine){
   const customerData = {
   customer_name: name,
   address,
-  phone,
+  cell_number,
   store_name
 
 };
@@ -302,7 +303,7 @@ if(!navigator.onLine){
 const { error: customerError } = await supabaseClient
   .from("customers")
   .upsert([customerData], {
-    onConflict: "phone"
+    onConflict: "cell_number"
   });
 
 if(customerError){
@@ -351,10 +352,10 @@ try{
 cart = [];
 renderCart();
 
-document.getElementById("name").value = "";
+document.getElementById("customer_name").value = "";
 ocument.getElementById("store_name").value = "";
 document.getElementById("address").value = "";
-document.getElementById("phone").value = "";
+document.getElementById("cell_number").value = "";
 d
 
 }
@@ -368,14 +369,14 @@ let itemsHtml = order.items.map(i => {
   total += subtotal;
 
   return `
-    ${i.name} x${i.qty}
+    ${i.customer_name} x${i.qty}
     = ₱${subtotal}
   `;
 }).join("<br>");
 
 document.getElementById("receiptContent").innerHTML = `
 <b>Name:</b> ${order.customer_name}<br>
-<b>Phone:</b> ${order.phone}<br><br>
+<b>Phone:</b> ${order.cell_number}<br><br>
 
 <b>Items:</b><br>
 ${itemsHtml}
