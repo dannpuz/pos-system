@@ -194,17 +194,17 @@ function displayProducts(products){
           <button
             class="add-btn"
 
-            onclick="addToCart(
-              ${product.id},
-              '${product.name}',
-              ${product.price},
-              '${product.image_url}'
-            )">
-
-            🛒 Add to Cart
-
-          </button>
-
+        <button
+        
+class="add-btn"
+onclick='addToCart(
+${product.id},
+${JSON.stringify(product.name)},
+${product.price},
+${JSON.stringify(product.image_url)}
+)'>
+🛒 Add to Cart
+</button>
         </div>
 
       </div>
