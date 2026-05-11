@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <title>DAVPUMM MOTOR PARTS ORDERING SYSTEM</title>
 
@@ -29,19 +29,17 @@ header{
   z-index:100;
   background:#111827;
   padding:10px;
-  display:flex;
-  gap:10px;
 }
 
 #search{
-  flex:1;
+  width:100%;
   padding:10px;
   border:none;
   border-radius:8px;
   outline:none;
 }
 
-/* PRODUCT GRID */
+/* PRODUCTS */
 .product-grid{
   display:grid;
   grid-template-columns:repeat(5,1fr);
@@ -67,7 +65,6 @@ header{
   }
 }
 
-/* CARD */
 .card{
   background:white;
   color:black;
@@ -131,7 +128,6 @@ header{
   z-index:999;
 }
 
-/* CART ITEM */
 .item{
   background:#1f2937;
   padding:10px;
@@ -231,11 +227,8 @@ input{
   <div id="cart"></div>
 
   <input id="customer_name" placeholder="Customer Name" />
-
   <input id="store_name" placeholder="Store Name" />
-
   <input id="address" placeholder="Address" />
-
   <input id="cell_number" placeholder="Phone Number" />
 
   <br>
@@ -263,20 +256,6 @@ const supabaseClient = supabase.createClient(
 
 let products = [];
 let cart = [];
-let gps = "Unavailable";
-
-/* =========================================
-   GPS
-========================================= */
-
-navigator.geolocation?.getCurrentPosition(
-  pos => {
-    gps = `${pos.coords.latitude},${pos.coords.longitude}`;
-  },
-  () => {
-    gps = "Unavailable";
-  }
-);
 
 /* =========================================
    LOAD PRODUCTS
@@ -431,7 +410,7 @@ function renderCart(){
 }
 
 /* =========================================
-   QUANTITY
+   QTY
 ========================================= */
 
 function minus(index){
@@ -453,7 +432,7 @@ function plus(index){
 }
 
 /* =========================================
-   TOGGLE CART
+   CART TOGGLE
 ========================================= */
 
 document.getElementById("cartBtn").onclick = () => {
@@ -504,15 +483,7 @@ async function checkout(){
     return alert("Phone number must be exactly 11 digits");
   }
 
-  /* ORDER OBJECT */
-
-  const order = {
-    name,
-    items: cart,
-       
-  };
-
-  /* CUSTOMER OBJECT */
+  /* SAVE CUSTOMER */
 
   const customerData = {
     customer_name,
@@ -521,49 +492,53 @@ async function checkout(){
     cell_number
   };
 
-  /* SAVE CUSTOMER */
-
-  const { error: customerError } = await supabaseClient
+  await supabaseClient
     .from("customers")
     .insert([customerData]);
 
-  if(customerError){
-    console.error(customerError);
-  }
+  /* RECEIPT ID */
 
-  /* SAVE ORDER */
+  const receipt_id =
+    "RCPT-" + Date.now();
 
-  const { data, error } = await supabaseClient
-    .from("sales")
-    .insert([order])
-    .select()
-    .single();
+  /* SAVE SALES */
 
-  if(error){
-    console.error(error);
-    return alert(error.message);
+  for(const item of cart){
+
+    const total = item.price * item.qty;
+
+    const saleData = {
+
+      date: new Date().toISOString(),
+
+      receipt_id: receipt_id,
+
+      products: item.name,
+
+      qty: item.qty,
+
+      price: item.price,
+
+      total: total,
+
+      customers_name: customer_name
+
+    };
+
+    const { error } = await supabaseClient
+      .from("sales")
+      .insert([saleData]);
+
+    if(error){
+      console.error(error);
+      return alert(error.message);
+    }
+
   }
 
   /* RECEIPT */
 
-  showReceipt(data);
-
-  /* OPTIONAL EMAIL */
-
-  try{
-
-    await supabaseClient.functions.invoke(
-      "send-order-email",
-      {
-        body:data
-      }
-    );
-
-  }catch(e){
-
-    console.log("Email function not available");
-
-  }
+  showReceipt(receipt_id, customer_name);
 
   /* CLEAR */
 
@@ -584,11 +559,11 @@ async function checkout(){
    RECEIPT
 ========================================= */
 
-function showReceipt(order){
+function showReceipt(receipt_id, customer_name){
 
   let total = 0;
 
-  const itemsHtml = order.items.map(item => {
+  const itemsHtml = cart.map(item => {
 
     const subtotal = item.price * item.qty;
 
@@ -603,13 +578,13 @@ function showReceipt(order){
 
   document.getElementById("receiptContent").innerHTML = `
 
-    <b>Name:</b>
-    ${order.customer_name}
+    <b>Receipt ID:</b>
+    ${receipt_id}
 
     <br><br>
 
-    <b>Phone:</b>
-    ${order.cell_number}
+    <b>Customer:</b>
+    ${customer_name}
 
     <br><br>
 
