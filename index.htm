@@ -206,7 +206,78 @@ input{
 
 <!-- HEADER -->
 <header>
+
+  <!-- CASH ON DELIVERY INSTRUCTIONS -->
+<div style="
+  background:#1e293b;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:10px;
+  border:1px solid #334155;
+">
+
+  <h3 style="
+    color:#60a5fa;
+    margin-bottom:10px;
+  ">
+    Cash On Delivery Instructions
+  </h3>
+
+  <!-- SCROLLABLE CONTENT -->
+  <div style="
+    max-height:60px;
+    overflow-y:auto;
+    line-height:1.7;
+    padding-right:5px;
+  ">
+
+    <p>
+      1. Browse and add your desired motor parts to the cart.
+    </p>
+
+    <p>
+      2. Open the cart and complete your customer details:
+    </p>
+
+    <ul style="
+      margin-left:20px;
+      margin-top:5px;
+      margin-bottom:10px;
+    ">
+      <li>Customer Name</li>
+      <li>Store Name</li>
+      <li>Complete Address</li>
+      <li>Phone Number</li>
+    </ul>
+
+    <p>
+      3. Click the <b>Checkout</b> button to place your order.
+    </p>
+
+    <p>
+      4. Our representative will contact you to confirm your order.
+    </p>
+
+    <p>
+      5. Payment will be collected upon delivery (Cash On Delivery).
+    </p>
+
+    <p style="
+      margin-top:10px;
+      color:#facc15;
+      font-weight:bold;
+    ">
+      Please make sure your phone number and address are correct.
+    </p>
+
+  </div>
+
+</div>
+
+
+  <!-- SEARCH -->
   <input id="search" placeholder="Search product..." />
+
 </header>
 
 <!-- PRODUCTS -->
@@ -289,13 +360,20 @@ function renderProducts(){
   box.innerHTML = "";
 
   const keyword = document
-    .getElementById("search")
-    .value
-    .toLowerCase();
+  .getElementById("search")
+  .value
+  .trim()
+  .toLowerCase();
 
   const filtered = products.filter(p =>
-    p.name?.toLowerCase().includes(keyword)
-  );
+
+  p.name?.toLowerCase().includes(keyword) ||
+
+  p.item_code?.toLowerCase().includes(keyword) ||
+
+  p.brand?.toLowerCase().includes(keyword)
+
+);
 
   filtered.forEach(product => {
 
@@ -476,7 +554,7 @@ async function checkout(){
     !address ||
     !cell_number
   ){
-    return alert("Complete all customer details");
+    return alert("Complete all customer details to continue");
   }
 
   if(!/^\d{11}$/.test(cell_number)){
@@ -551,7 +629,7 @@ async function checkout(){
   document.getElementById("address").value = "";
   document.getElementById("cell_number").value = "";
 
-  alert("Order placed successfully");
+  alert("Order placed successfully, expect a call from our representative for your orders");
 
 }
 
