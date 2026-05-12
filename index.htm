@@ -276,7 +276,7 @@ input{
 
 
   <!-- SEARCH -->
-  <input id="search" placeholder="Search product..." />
+  <input id="search" placeholder="Search product, code, brand..." />
 
 </header>
 
@@ -365,15 +365,21 @@ function renderProducts(){
   .trim()
   .toLowerCase();
 
-  const filtered = products.filter(p =>
+  const filtered = products.filter(p => {
 
-  p.name?.toLowerCase().includes(keyword) ||
+  const name = String(p.name || "").toLowerCase();
 
-  p.item_code?.toLowerCase().includes(keyword) ||
+  const itemCode = String(p.item_code || "").toLowerCase();
 
-  p.brand?.toLowerCase().includes(keyword)
+  const brand = String(p.brand || "").toLowerCase();
 
-);
+  return (
+    name.includes(keyword) ||
+    itemCode.includes(keyword) ||
+    brand.includes(keyword)
+  );
+
+});
 
   filtered.forEach(product => {
 
