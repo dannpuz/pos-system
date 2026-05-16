@@ -454,18 +454,25 @@ document
    RENDER CART
 ========================================= */
 
+<script>
+
 function renderCart(){
 
   const box = document.getElementById("cart");
 
   let html = "";
+
   let count = 0;
-let grandTotal = 0;
+
+  let grandTotal = 0;
 
   cart.forEach((item,index) => {
-  
-const subtotal = item.price * item.qty;
-grandTotal += subtotal;
+
+    const subtotal =
+      Number(item.price) * Number(item.qty);
+
+    grandTotal += subtotal;
+
     count += item.qty;
 
     html += `
@@ -473,7 +480,14 @@ grandTotal += subtotal;
 
         <b>${item.name}</b><br>
 
-        ₱${item.price} x ${item.qty} = ₱${subtotal}
+        ₱${Number(item.price).toLocaleString()}
+        x
+        ${item.qty}
+
+        <br><br>
+
+        <b>Subtotal:</b>
+        ₱${subtotal.toLocaleString()}
 
         <div class="qty">
 
@@ -489,6 +503,21 @@ grandTotal += subtotal;
     `;
 
   });
+
+  /* GRAND TOTAL */
+  html += `
+    <div class="item" style="
+      background:#2563eb;
+      color:white;
+      font-size:20px;
+      font-weight:bold;
+      text-align:center;
+    ">
+
+      TOTAL: ₱${grandTotal.toLocaleString()}
+
+    </div>
+  `;
 
   box.innerHTML = html;
 
