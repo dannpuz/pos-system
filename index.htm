@@ -460,9 +460,12 @@ function renderCart(){
 
   let html = "";
   let count = 0;
+let grandTotal = 0;
 
   cart.forEach((item,index) => {
-
+  
+const subtotal = item.price * item.qty;
+grandTotal += subtotal;
     count += item.qty;
 
     html += `
@@ -470,7 +473,7 @@ function renderCart(){
 
         <b>${item.name}</b><br>
 
-        ₱${item.price}
+        ₱${item.price} x ${item.qty} = ₱${subtotal}
 
         <div class="qty">
 
@@ -622,7 +625,7 @@ async function checkout(){
 
   /* RECEIPT */
 
-  showReceipt(receipt_id, customer_name);
+  showReceipt(receipt_id, customer_name, [...cart]);
 
   /* CLEAR */
 
@@ -643,11 +646,11 @@ async function checkout(){
    RECEIPT
 ========================================= */
 
-function showReceipt(receipt_id, customer_name){
+function showReceipt(receipt_id, customer_name, items){
 
   let total = 0;
 
-  const itemsHtml = cart.map(item => {
+  const itemsHtml = items.map(item => {
 
     const subtotal = item.price * item.qty;
 
@@ -679,7 +682,7 @@ function showReceipt(receipt_id, customer_name){
     <br><br>
 
     <b>Total:</b>
-    ₱${total}
+    ₱${total.toLocaleString()}
 
   `;
 
