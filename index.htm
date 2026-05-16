@@ -454,35 +454,37 @@ document
    RENDER CART
 ========================================= */
 
-<script>
+
 
 function renderCart(){
 
   const box = document.getElementById("cart");
+  const countBox = document.getElementById("count");
+
+  if(!box || !countBox) return;
 
   let html = "";
-
   let count = 0;
-
   let grandTotal = 0;
 
   cart.forEach((item,index) => {
 
-    const subtotal =
-      Number(item.price) * Number(item.qty);
+    const price = Number(item.price) || 0;
+    const qty = Number(item.qty) || 0;
+
+    const subtotal = price * qty;
 
     grandTotal += subtotal;
-
-    count += item.qty;
+    count += qty;
 
     html += `
       <div class="item">
 
         <b>${item.name}</b><br>
 
-        ₱${Number(item.price).toLocaleString()}
+        ₱${price.toLocaleString()}
         x
-        ${item.qty}
+        ${qty}
 
         <br><br>
 
@@ -493,7 +495,7 @@ function renderCart(){
 
           <button onclick="minus(${index})">-</button>
 
-          <span>${item.qty}</span>
+          <span>${qty}</span>
 
           <button onclick="plus(${index})">+</button>
 
@@ -504,26 +506,40 @@ function renderCart(){
 
   });
 
-  /* GRAND TOTAL */
-  html += `
-    <div class="item" style="
-      background:#2563eb;
-      color:white;
-      font-size:20px;
-      font-weight:bold;
-      text-align:center;
-    ">
+  /* SHOW TOTAL ONLY IF CART HAS ITEMS */
+  if(cart.length > 0){
 
-      TOTAL: ₱${grandTotal.toLocaleString()}
+    html += `
+      <div class="item" style="
+        background:#2563eb;
+        color:white;
+        font-size:20px;
+        font-weight:bold;
+        text-align:center;
+      ">
 
-    </div>
-  `;
+        TOTAL: ₱${grandTotal.toLocaleString()}
+
+      </div>
+    `;
+
+  }else{
+
+    html = `
+      <div class="item" style="text-align:center;">
+        Cart is empty
+      </div>
+    `;
+
+  }
 
   box.innerHTML = html;
 
-  document.getElementById("count").innerText = count;
+  countBox.innerText = count;
 
 }
+
+
 
 /* =========================================
    QTY
