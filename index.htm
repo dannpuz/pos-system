@@ -635,27 +635,46 @@ async function checkout(){
 
   /* SAVE SALES */
 
-  for(const item of cart){
+  /* COMPUTE TOTAL */
 
-    const total = item.price * item.qty;
+let grandTotal = 0;
 
-    const saleData = {
+cart.forEach(item => {
+  grandTotal += item.price * item.qty;
+});
 
-      date: new Date().toISOString(),
+/* RECEIPT ID */
 
-      receipt_id: receipt_id,
+const receipt_id = "RCPT-" + Date.now();
 
-      products: item.name,
+/* SAVE ORDER */
 
-      qty: item.qty,
+const orderData = {
 
-      price: item.price,
+  receipt_id,
 
-      total: total,
+  customer_name,
 
-      customers_name: customer_name
+  store_name,
 
-    };
+  address,
+
+  cell_number,
+
+  items: cart,
+
+  total: grandTotal
+
+};
+
+const { error } = await supabaseClient
+  .from("orders")
+  .insert([orderData]);
+
+if(error){
+  console.error(error);
+  return alert(error.message);
+}
 
     const { error } = await supabaseClient
       .from("sales")
@@ -667,7 +686,42 @@ async function checkout(){
     }
 
   }
+/* TOTAL */
 
+let grandTotal = 0;
+
+cart.forEach(item => {
+  grandTotal += item.price * item.qty;
+});
+
+/* SEND EMAIL */
+
+await fetch(
+  "https://YOUR_PROJECT.supabase.co/functions/v1/send-order-email",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+
+      receipt_id,
+
+      customer_name,
+
+      store_name,
+
+      address,
+
+      cell_number,
+
+      items: cart,
+
+      total: grandTotal
+
+    })
+  }
+);
   /* RECEIPT */
 
   showReceipt(receipt_id, customer_name, [...cart]);
