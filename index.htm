@@ -696,23 +696,37 @@ async function checkout(){
         "Content-Type":"application/json"
       },
 
-      body:JSON.stringify({
+     body: JSON.stringify({
 
-        record:{
-          receipt_id,
-          customer_name,
-          store_name,
-          address,
-          cell_number,
-          total:grandTotal,
-          created_at:new Date().toISOString(),
-          items:cart
-        }
+  record: {
 
-      })
+    receipt_id: receipt_id,
 
-    }
-  );
+    customer_name: customer_name,
+
+    store_name: store_name,
+
+    address: address,
+
+    cell_number: cell_number,
+
+    total: grandTotal,
+
+    created_at: new Date().toISOString(),
+
+    items: cart.map(item => ({
+
+      name: item.name,
+
+      qty: item.qty,
+
+      price: item.price
+
+    }))
+
+  }
+
+})
 
   /* SHOW RECEIPT */
 
