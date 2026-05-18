@@ -167,7 +167,7 @@ input{
   outline:none;
 }
 
-/* RECEIPT MODAL */
+/* RECEIPT */
 
 #receiptModal{
   display:none;
@@ -291,9 +291,16 @@ input{
 ========================================= */
 
 const supabaseClient = supabase.createClient(
-  "https://gwqnvhbzvzfzryxxdmui.supabase.co",
+ "https://gwqnvhbzvzfzryxxdmui.supabase.co",
   "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
 );
+
+/* =========================================
+   EDGE FUNCTION URL
+========================================= */
+
+const EDGE_FUNCTION_URL =
+"https://YOUR_PROJECT.supabase.co/functions/v1/send-order-email";
 
 /* =========================================
    STATE
@@ -427,7 +434,9 @@ document
   }else{
 
     cart.push({
-      ...product,
+      id:product.id,
+      name:product.name,
+      price:Number(product.price),
       qty:1
     });
 
@@ -533,7 +542,7 @@ function renderCart(){
 }
 
 /* =========================================
-   QTY
+   QUANTITY
 ========================================= */
 
 function plus(index){
@@ -579,181 +588,200 @@ document.getElementById("cartBtn").onclick = () => {
 
 async function checkout(){
 
-  if(cart.length === 0){
+  try {
 
-    return alert("Cart is empty");
+    if(cart.length === 0){
 
-  }
+      return alert("Cart is empty");
 
-  const customer_name =
-    document.getElementById("customer_name").value.trim();
+    }
 
-  const store_name =
-    document.getElementById("store_name").value.trim();
+    const customer_name =
+      document.getElementById("customer_name").value.trim();
 
-  const address =
-    document.getElementById("address").value.trim();
+    const store_name =
+      document.getElementById("store_name").value.trim();
 
-  const cell_number =
-    document.getElementById("cell_number").value.trim();
+    const address =
+      document.getElementById("address").value.trim();
 
-  if(
-    !customer_name ||
-    !store_name ||
-    !address ||
-    !cell_number
-  ){
+    const cell_number =
+      document.getElementById("cell_number").value.trim();
 
-    return alert("Complete customer details");
+    if(
+      !customer_name ||
+      !store_name ||
+      !address ||
+      !cell_number
+    ){
 
-  }
+      return alert("Complete customer details");
 
-  if(!/^\d{11}$/.test(cell_number)){
+    }
 
-    return alert("Phone number must be 11 digits");
+    if(!/^\d{11}$/.test(cell_number)){
 
-  }
+      return alert("Phone number must be 11 digits");
 
-  /* GRAND TOTAL */
+    }
 
-  let grandTotal = 0;
+    /* TOTAL */
 
-  cart.forEach(item => {
+    let grandTotal = 0;
 
-    grandTotal += item.price * item.qty;
+    cart.forEach(item => {
 
-  });
+      grandTotal += item.price * item.qty;
 
-  /* RECEIPT ID */
+    });
 
-  const receipt_id = "RCPT-" + Date.now();
+    /* RECEIPT ID */
 
-  /* SAVE ORDER */
+    const receipt_id = "RCPT-" + Date.now();
 
-  const orderData = {
+    /* SAVE ORDER */
 
-    receipt_id,
-    customer_name,
-    store_name,
-    address,
-    cell_number,
-    total: grandTotal
+    const orderData = {
 
-  };
+      receipt_id,
+      customer_name,
+      store_name,
+      address,
+      cell_number,
+      total: grandTotal
 
-  const { data:orderResult, error:orderError } =
-    await supabaseClient
+    };
+
+    const {
+      data:orderResult,
+      error:orderError
+    } = await supabaseClient
     .from("orders")
     .insert([orderData])
     .select()
     .single();
 
-  if(orderError){
+    if(orderError){
 
-    console.error(orderError);
+      console.error(orderError);
 
-    return alert(orderError.message);
+      return alert(orderError.message);
 
-  }
+    }
 
-  /* SAVE ORDER ITEMS */
+    /* SAVE ITEMS */
 
-  const itemsData = cart.map(item => ({
+    const itemsData = cart.map(item => ({
 
-    order_id: orderResult.id,
+      order_id: orderResult.id,
 
-    product_name: item.name,
-
-    qty: item.qty,
-
-    price: item.price,
-
-    subtotal: item.price * item.qty
-
-  }));
-
-  const { error:itemError } = await supabaseClient
-  .from("order_items")
-  .insert(itemsData);
-
-  if(itemError){
-
-    console.error(itemError);
-
-    return alert(itemError.message);
-
-  }
-
-  /* SEND TO EDGE FUNCTION */
-
-  await fetch(
-    "YOUR_SUPABASE_EDGE_FUNCTION_URL",
-    {
-
-      method:"POST",
-
-      headers:{
-        "Content-Type":"application/json"
-      },
-
-     body: JSON.stringify({
-
-  record: {
-
-    receipt_id: receipt_id,
-
-    customer_name: customer_name,
-
-    store_name: store_name,
-
-    address: address,
-
-    cell_number: cell_number,
-
-    total: grandTotal,
-
-    created_at: new Date().toISOString(),
-
-    items: cart.map(item => ({
-
-      name: item.name,
+      product_name: item.name,
 
       qty: item.qty,
 
-      price: item.price
+      price: item.price,
 
-    }))
+      subtotal: item.price * item.qty
+
+    }));
+
+    const {
+      error:itemError
+    } = await supabaseClient
+    .from("order_items")
+    .insert(itemsData);
+
+    if(itemError){
+
+      console.error(itemError);
+
+      return alert(itemError.message);
+
+    }
+
+    /* SEND EMAIL */
+
+    await fetch(
+      EDGE_FUNCTION_URL,
+      {
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body: JSON.stringify({
+
+          record: {
+
+            receipt_id: receipt_id,
+
+            customer_name: customer_name,
+
+            store_name: store_name,
+
+            address: address,
+
+            cell_number: cell_number,
+
+            total: grandTotal,
+
+            created_at: new Date().toISOString(),
+
+            items: cart.map(item => ({
+
+              name: item.name,
+
+              qty: item.qty,
+
+              price: item.price
+
+            }))
+
+          }
+
+        })
+
+      }
+    );
+
+    /* SHOW RECEIPT */
+
+    showReceipt(
+      receipt_id,
+      customer_name,
+      store_name,
+      address,
+      cell_number,
+      cart
+    );
+
+    /* CLEAR */
+
+    cart = [];
+
+    renderCart();
+
+    document.getElementById("customer_name").value = "";
+
+    document.getElementById("store_name").value = "";
+
+    document.getElementById("address").value = "";
+
+    document.getElementById("cell_number").value = "";
+
+    alert(
+      "Order placed successfully"
+    );
+
+  } catch(err){
+
+    console.error(err);
+
+    alert(err.message);
 
   }
-
-})
-
-  /* SHOW RECEIPT */
-
-  showReceipt(
-    receipt_id,
-    customer_name,
-    store_name,
-    address,
-    cell_number,
-    cart
-  );
-
-  /* CLEAR */
-
-  cart = [];
-
-  renderCart();
-
-  document.getElementById("customer_name").value = "";
-
-  document.getElementById("store_name").value = "";
-
-  document.getElementById("address").value = "";
-
-  document.getElementById("cell_number").value = "";
-
-  alert("Order placed successfully");
 
 }
 
