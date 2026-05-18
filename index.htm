@@ -291,7 +291,7 @@ input{
 ========================================= */
 
 const supabaseClient = supabase.createClient(
-  "https://gwqnvhbzvzfzryxxdmui.supabase.co",
+ "https://gwqnvhbzvzfzryxxdmui.supabase.co",
   "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
 );
 
@@ -301,7 +301,6 @@ const supabaseClient = supabase.createClient(
 
 const EDGE_FUNCTION_URL =
 "https://gwqnvhbzvzfzryxxdmui.supabase.co/functions/v1/send-order-email";
-
 
 /* =========================================
    STATE
@@ -700,52 +699,68 @@ async function checkout(){
 
     }
 
-    /* SEND EMAIL */
+   /* SEND EMAIL */
 
-    await fetch(
-      EDGE_FUNCTION_URL,
-      {
+const emailPayload = {
 
-        method:"POST",
+  record: {
 
-        headers:{
-          "Content-Type":"application/json"
-        },
+    receipt_id: receipt_id,
 
-        body: JSON.stringify({
+    customer_name: customer_name,
 
-          record: {
+    store_name: store_name,
 
-            receipt_id: receipt_id,
+    address: address,
 
-            customer_name: customer_name,
+    cell_number: cell_number,
 
-            store_name: store_name,
+    total: grandTotal,
 
-            address: address,
+    created_at: new Date().toISOString(),
 
-            cell_number: cell_number,
+    items: cart.map(item => ({
 
-            total: grandTotal,
+      name: item.name,
 
-            created_at: new Date().toISOString(),
+      qty: Number(item.qty),
 
-            items: cart.map(item => ({
+      price: Number(item.price)
 
-              name: item.name,
+    }))
 
-              qty: item.qty,
+  }
 
-              price: item.price
+};
 
-            }))
+console.log("EMAIL PAYLOAD:", emailPayload);
 
-          }
+const response = await fetch(
+  EDGE_FUNCTION_URL,
+  {
 
-        })
+    method: "POST",
 
-      }
-    );
+    headers: {
+
+      "Content-Type": "application/json",
+
+      "Authorization":
+        "Bearer sb_********************************",
+
+      "apikey":
+        "sb_********************************"
+
+    },
+
+    body: JSON.stringify(emailPayload)
+
+  }
+);
+
+const result = await response.json();
+
+console.log("EMAIL RESULT:", result);
 
     /* SHOW RECEIPT */
 
