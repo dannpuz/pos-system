@@ -197,7 +197,7 @@ input{
 
 <body>
 
-<!-- RECEIPT MODAL -->
+<!-- RECEIPT -->
 
 <div id="receiptModal">
 
@@ -232,7 +232,7 @@ input{
 
     <br>
 
-    <p>1. Add products to cart.</p>
+    <p>1. Browse products and add to cart.</p>
     <p>2. Complete customer details.</p>
     <p>3. Click checkout.</p>
     <p>4. Wait for confirmation call.</p>
@@ -291,7 +291,7 @@ input{
 ========================================= */
 
 const supabaseClient = supabase.createClient(
-  "https://gwqnvhbzvzfzryxxdmui.supabase.co",
+  "https://YOUR_PROJECT.supabase.co",
   "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
 );
 
@@ -614,7 +614,7 @@ async function checkout(){
 
   }
 
-  const receipt_id = "RCPT-" + Date.now();
+  /* GRAND TOTAL */
 
   let grandTotal = 0;
 
@@ -624,6 +624,12 @@ async function checkout(){
 
   });
 
+  /* RECEIPT ID */
+
+  const receipt_id = "RCPT-" + Date.now();
+
+  /* SAVE ORDER */
+
   const orderData = {
 
     receipt_id,
@@ -631,8 +637,7 @@ async function checkout(){
     store_name,
     address,
     cell_number,
-    total: grandTotal,
-    created_at: new Date().toISOString()
+    total: grandTotal
 
   };
 
@@ -651,11 +656,11 @@ async function checkout(){
 
   }
 
+  /* SAVE ORDER ITEMS */
+
   const itemsData = cart.map(item => ({
 
     order_id: orderResult.id,
-
-    receipt_id,
 
     product_name: item.name,
 
@@ -679,6 +684,38 @@ async function checkout(){
 
   }
 
+  /* SEND TO EDGE FUNCTION */
+
+  await fetch(
+    "YOUR_SUPABASE_EDGE_FUNCTION_URL",
+    {
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+
+        record:{
+          receipt_id,
+          customer_name,
+          store_name,
+          address,
+          cell_number,
+          total:grandTotal,
+          created_at:new Date().toISOString(),
+          items:cart
+        }
+
+      })
+
+    }
+  );
+
+  /* SHOW RECEIPT */
+
   showReceipt(
     receipt_id,
     customer_name,
@@ -687,6 +724,8 @@ async function checkout(){
     cell_number,
     cart
   );
+
+  /* CLEAR */
 
   cart = [];
 
@@ -731,19 +770,34 @@ function showReceipt(
 
       <tr>
 
-        <td style="padding:8px;border-bottom:1px solid #ddd;">
+        <td style="
+          padding:8px;
+          border-bottom:1px solid #ddd;
+        ">
           ${item.name}
         </td>
 
-        <td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">
+        <td style="
+          padding:8px;
+          border-bottom:1px solid #ddd;
+          text-align:center;
+        ">
           ${item.qty}
         </td>
 
-        <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
+        <td style="
+          padding:8px;
+          border-bottom:1px solid #ddd;
+          text-align:right;
+        ">
           ₱${Number(item.price).toLocaleString()}
         </td>
 
-        <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
+        <td style="
+          padding:8px;
+          border-bottom:1px solid #ddd;
+          text-align:right;
+        ">
           ₱${subtotal.toLocaleString()}
         </td>
 
@@ -759,8 +813,15 @@ function showReceipt(
       text-align:center;
       color:#2563eb;
     ">
-      SALES RECEIPT
+      DAVPUMM MOTOR PARTS
     </h2>
+
+    <h3 style="
+      text-align:center;
+      margin-top:5px;
+    ">
+      SALES RECEIPT
+    </h3>
 
     <hr>
 
@@ -841,8 +902,10 @@ function showReceipt(
       text-align:right;
       color:#16a34a;
     ">
+
       TOTAL:
       ₱${total.toLocaleString()}
+
     </h2>
 
   `;
