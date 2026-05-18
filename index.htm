@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
+
+<meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <title>DAVPUMM MOTOR PARTS ORDERING SYSTEM</title>
@@ -23,6 +26,7 @@ body{
 }
 
 /* HEADER */
+
 header{
   position:sticky;
   top:0;
@@ -40,6 +44,7 @@ header{
 }
 
 /* PRODUCTS */
+
 .product-grid{
   display:grid;
   grid-template-columns:repeat(5,1fr);
@@ -74,7 +79,7 @@ header{
 
 .card img{
   width:100%;
-  height:120px;
+  height:140px;
   object-fit:cover;
 }
 
@@ -99,6 +104,7 @@ header{
 }
 
 /* CART BUTTON */
+
 .cart-fab{
   position:fixed;
   bottom:20px;
@@ -111,19 +117,20 @@ header{
   align-items:center;
   justify-content:center;
   font-size:20px;
-  z-index:1000;
   cursor:pointer;
+  z-index:1000;
 }
 
 /* CART PANEL */
+
 .cart{
   position:fixed;
   top:0;
   right:0;
-  width:320px;
+  width:340px;
   height:100vh;
   background:#111827;
-  padding:10px;
+  padding:15px;
   overflow:auto;
   z-index:999;
 }
@@ -131,35 +138,37 @@ header{
 .item{
   background:#1f2937;
   padding:10px;
-  margin-bottom:10px;
   border-radius:8px;
+  margin-bottom:10px;
 }
 
 .qty{
   display:flex;
-  gap:8px;
   align-items:center;
-  margin-top:5px;
+  gap:10px;
+  margin-top:8px;
 }
 
 .qty button{
-  padding:4px 10px;
+  padding:5px 10px;
   border:none;
   border-radius:5px;
   cursor:pointer;
 }
 
 /* INPUTS */
+
 input{
   width:100%;
   padding:10px;
   border:none;
   border-radius:6px;
-  margin-top:8px;
+  margin-top:10px;
   outline:none;
 }
 
-/* RECEIPT */
+/* RECEIPT MODAL */
+
 #receiptModal{
   display:none;
   position:fixed;
@@ -168,29 +177,31 @@ input{
   z-index:2000;
   align-items:center;
   justify-content:center;
+  padding:20px;
 }
 
 .receipt-box{
   background:white;
   color:black;
-  padding:20px;
-  width:320px;
+  width:100%;
+  max-width:700px;
   border-radius:10px;
+  padding:20px;
+  max-height:90vh;
+  overflow:auto;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<!-- RECEIPT -->
+<!-- RECEIPT MODAL -->
+
 <div id="receiptModal">
 
   <div class="receipt-box">
-
-    <h3>Receipt</h3>
-
-    <br>
 
     <div id="receiptContent"></div>
 
@@ -205,69 +216,65 @@ input{
 </div>
 
 <!-- HEADER -->
+
 <header>
 
-<div style="
-  background:#1e293b;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:10px;
-  border:1px solid #334155;
-">
-
-  <h3 style="
-    color:#60a5fa;
+  <div style="
+    background:#1e293b;
+    padding:15px;
+    border-radius:10px;
     margin-bottom:10px;
   ">
-    Cash On Delivery Instructions
-  </h3>
 
-  <div style="
-    max-height:60px;
-    overflow-y:auto;
-    line-height:1.7;
-    padding-right:5px;
-  ">
+    <h3 style="color:#60a5fa;">
+      Cash On Delivery Instructions
+    </h3>
 
-    <p>1. Browse and add your desired motor parts to the cart.</p>
+    <br>
 
-    <p>2. Open the cart and complete your customer details.</p>
-
-    <p>3. Click Checkout to place your order.</p>
-
-    <p>4. Our representative will contact you to confirm your order.</p>
-
-    <p>5. Payment will be collected upon delivery.</p>
+    <p>1. Add products to cart.</p>
+    <p>2. Complete customer details.</p>
+    <p>3. Click checkout.</p>
+    <p>4. Wait for confirmation call.</p>
 
   </div>
 
-</div>
-
-<input id="search" placeholder="Search product, code, brand..." />
+  <input
+    id="search"
+    placeholder="Search product, code, brand..."
+  />
 
 </header>
 
 <!-- PRODUCTS -->
+
 <div id="products" class="product-grid"></div>
 
 <!-- CART BUTTON -->
+
 <div class="cart-fab" id="cartBtn">
+
   🛒 <span id="count">0</span>
+
 </div>
 
-<!-- CART PANEL -->
+<!-- CART -->
+
 <div class="cart" id="cartPanel" style="display:none;">
 
-  <h3>Cart</h3>
+  <h2>Shopping Cart</h2>
 
   <br>
 
   <div id="cart"></div>
 
-  <input id="customer_name" placeholder="Customer Name" />
-  <input id="store_name" placeholder="Store Name" />
-  <input id="address" placeholder="Address" />
-  <input id="cell_number" placeholder="Phone Number" />
+  <input id="customer_name" placeholder="Customer Name">
+
+  <input id="store_name" placeholder="Store Name">
+
+  <input id="address" placeholder="Complete Address">
+
+  <input id="cell_number" placeholder="Phone Number">
 
   <br>
 
@@ -293,6 +300,7 @@ const supabaseClient = supabase.createClient(
 ========================================= */
 
 let products = [];
+
 let cart = [];
 
 /* =========================================
@@ -302,13 +310,15 @@ let cart = [];
 async function loadProducts(){
 
   const { data, error } = await supabaseClient
-    .from("products")
-    .select("*");
+  .from("products")
+  .select("*");
 
   if(error){
+
     console.error(error);
-    alert(error.message);
-    return;
+
+    return alert(error.message);
+
   }
 
   products = data || [];
@@ -328,23 +338,23 @@ function renderProducts(){
   box.innerHTML = "";
 
   const keyword = document
-    .getElementById("search")
-    .value
-    .trim()
-    .toLowerCase();
+  .getElementById("search")
+  .value
+  .trim()
+  .toLowerCase();
 
   const filtered = products.filter(p => {
 
     const name = String(p.name || "").toLowerCase();
 
-    const itemCode = String(p.item_code || "").toLowerCase();
-
     const brand = String(p.brand || "").toLowerCase();
+
+    const code = String(p.item_code || "").toLowerCase();
 
     return (
       name.includes(keyword) ||
-      itemCode.includes(keyword) ||
-      brand.includes(keyword)
+      brand.includes(keyword) ||
+      code.includes(keyword)
     );
 
   });
@@ -356,6 +366,7 @@ function renderProducts(){
     div.className = "card";
 
     div.innerHTML = `
+
       <img src="${product.image_url || ''}">
 
       <div class="card-body">
@@ -366,11 +377,15 @@ function renderProducts(){
           ₱${Number(product.price).toLocaleString()}
         </p>
 
-        <button class="add-btn" data-id="${product.id}">
-          Add
+        <button
+          class="add-btn"
+          data-id="${product.id}"
+        >
+          Add To Cart
         </button>
 
       </div>
+
     `;
 
     box.appendChild(div);
@@ -384,43 +399,41 @@ function renderProducts(){
 ========================================= */
 
 document
-  .getElementById("search")
-  .addEventListener("input", renderProducts);
+.getElementById("search")
+.addEventListener("input", renderProducts);
 
 /* =========================================
    ADD TO CART
 ========================================= */
 
 document
-  .getElementById("products")
-  .addEventListener("click", e => {
+.getElementById("products")
+.addEventListener("click", e => {
 
-    if(!e.target.classList.contains("add-btn")) return;
+  if(!e.target.classList.contains("add-btn")) return;
 
-    const id = Number(e.target.dataset.id);
+  const id = Number(e.target.dataset.id);
 
-    const product = products.find(p => p.id === id);
+  const product = products.find(p => p.id === id);
 
-    if(!product) return;
+  if(!product) return;
 
-    const existing = cart.find(i => i.id === id);
+  const existing = cart.find(i => i.id === id);
 
-    if(existing){
+  if(existing){
 
-      existing.qty++;
+    existing.qty++;
 
-    }else{
+  }else{
 
-      cart.push({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        qty: 1
-      });
+    cart.push({
+      ...product,
+      qty:1
+    });
 
-    }
+  }
 
-    renderCart();
+  renderCart();
 
 });
 
@@ -431,11 +444,12 @@ document
 function renderCart(){
 
   const box = document.getElementById("cart");
+
   const countBox = document.getElementById("count");
 
   let html = "";
 
-  let count = 0;
+  let totalQty = 0;
 
   let grandTotal = 0;
 
@@ -445,33 +459,41 @@ function renderCart(){
 
     grandTotal += subtotal;
 
-    count += item.qty;
+    totalQty += item.qty;
 
     html += `
+
       <div class="item">
 
-        <b>${item.name}</b><br>
-
-        ₱${item.price.toLocaleString()}
-        x
-        ${item.qty}
+        <b>${item.name}</b>
 
         <br><br>
 
-        <b>Subtotal:</b>
-        ₱${subtotal.toLocaleString()}
+        ₱${Number(item.price).toLocaleString()}
+
+        <br><br>
+
+        <b>
+          Subtotal:
+          ₱${subtotal.toLocaleString()}
+        </b>
 
         <div class="qty">
 
-          <button onclick="minus(${index})">-</button>
+          <button onclick="minus(${index})">
+            -
+          </button>
 
           <span>${item.qty}</span>
 
-          <button onclick="plus(${index})">+</button>
+          <button onclick="plus(${index})">
+            +
+          </button>
 
         </div>
 
       </div>
+
     `;
 
   });
@@ -479,21 +501,25 @@ function renderCart(){
   if(cart.length > 0){
 
     html += `
+
       <div class="item" style="
         background:#2563eb;
-        color:white;
         font-size:20px;
-        font-weight:bold;
         text-align:center;
+        font-weight:bold;
       ">
-        TOTAL: ₱${grandTotal.toLocaleString()}
+
+        TOTAL:
+        ₱${grandTotal.toLocaleString()}
+
       </div>
+
     `;
 
   }else{
 
     html = `
-      <div class="item" style="text-align:center;">
+      <div class="item">
         Cart is empty
       </div>
     `;
@@ -502,7 +528,7 @@ function renderCart(){
 
   box.innerHTML = html;
 
-  countBox.innerText = count;
+  countBox.innerText = totalQty;
 
 }
 
@@ -510,21 +536,23 @@ function renderCart(){
    QTY
 ========================================= */
 
-function minus(index){
+function plus(index){
 
-  cart[index].qty--;
-
-  if(cart[index].qty <= 0){
-    cart.splice(index,1);
-  }
+  cart[index].qty++;
 
   renderCart();
 
 }
 
-function plus(index){
+function minus(index){
 
-  cart[index].qty++;
+  cart[index].qty--;
+
+  if(cart[index].qty <= 0){
+
+    cart.splice(index,1);
+
+  }
 
   renderCart();
 
@@ -552,7 +580,9 @@ document.getElementById("cartBtn").onclick = () => {
 async function checkout(){
 
   if(cart.length === 0){
+
     return alert("Cart is empty");
+
   }
 
   const customer_name =
@@ -567,85 +597,110 @@ async function checkout(){
   const cell_number =
     document.getElementById("cell_number").value.trim();
 
-  /* VALIDATION */
-
   if(
     !customer_name ||
     !store_name ||
     !address ||
     !cell_number
   ){
-    return alert("Complete all customer details");
+
+    return alert("Complete customer details");
+
   }
 
   if(!/^\d{11}$/.test(cell_number)){
+
     return alert("Phone number must be 11 digits");
+
   }
 
-  /* TOTAL */
+  const receipt_id = "RCPT-" + Date.now();
 
   let grandTotal = 0;
 
   cart.forEach(item => {
+
     grandTotal += item.price * item.qty;
+
   });
-
-  /* RECEIPT ID */
-
-  const receipt_id =
-    "RCPT-" + Date.now();
-
-  /* SAVE ORDER */
 
   const orderData = {
 
     receipt_id,
-
     customer_name,
-
     store_name,
-
     address,
-
     cell_number,
-
-    items: cart,
-
-    total: grandTotal
+    total: grandTotal,
+    created_at: new Date().toISOString()
 
   };
 
-  const { error } = await supabaseClient
+  const { data:orderResult, error:orderError } =
+    await supabaseClient
     .from("orders")
-    .insert([orderData]);
+    .insert([orderData])
+    .select()
+    .single();
 
-  if(error){
-    console.error(error);
-    return alert(error.message);
+  if(orderError){
+
+    console.error(orderError);
+
+    return alert(orderError.message);
+
   }
 
-  /* RECEIPT */
+  const itemsData = cart.map(item => ({
+
+    order_id: orderResult.id,
+
+    receipt_id,
+
+    product_name: item.name,
+
+    qty: item.qty,
+
+    price: item.price,
+
+    subtotal: item.price * item.qty
+
+  }));
+
+  const { error:itemError } = await supabaseClient
+  .from("order_items")
+  .insert(itemsData);
+
+  if(itemError){
+
+    console.error(itemError);
+
+    return alert(itemError.message);
+
+  }
 
   showReceipt(
     receipt_id,
     customer_name,
-    [...cart]
+    store_name,
+    address,
+    cell_number,
+    cart
   );
-
-  /* CLEAR */
 
   cart = [];
 
   renderCart();
 
   document.getElementById("customer_name").value = "";
+
   document.getElementById("store_name").value = "";
+
   document.getElementById("address").value = "";
+
   document.getElementById("cell_number").value = "";
 
-  alert(
-    "Order placed successfully. Expect a confirmation call shortly."
-  );
+  alert("Order placed successfully");
 
 }
 
@@ -653,49 +708,154 @@ async function checkout(){
    RECEIPT
 ========================================= */
 
-function showReceipt(receipt_id, customer_name, items){
+function showReceipt(
+  receipt_id,
+  customer_name,
+  store_name,
+  address,
+  cell_number,
+  items
+){
 
   let total = 0;
 
-  const itemsHtml = items.map(item => {
+  let rows = "";
+
+  items.forEach(item => {
 
     const subtotal = item.price * item.qty;
 
     total += subtotal;
 
-    return `
-      ${item.name} x${item.qty}
-      = ₱${subtotal.toLocaleString()}
+    rows += `
+
+      <tr>
+
+        <td style="padding:8px;border-bottom:1px solid #ddd;">
+          ${item.name}
+        </td>
+
+        <td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">
+          ${item.qty}
+        </td>
+
+        <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
+          ₱${Number(item.price).toLocaleString()}
+        </td>
+
+        <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
+          ₱${subtotal.toLocaleString()}
+        </td>
+
+      </tr>
+
     `;
 
-  }).join("<br>");
+  });
 
-  document.getElementById("receiptContent").innerHTML = `
+  const html = `
 
-    <b>Receipt ID:</b>
-    ${receipt_id}
+    <h2 style="
+      text-align:center;
+      color:#2563eb;
+    ">
+      SALES RECEIPT
+    </h2>
 
-    <br><br>
+    <hr>
 
-    <b>Customer:</b>
-    ${customer_name}
+    <p>
+      <b>Receipt No:</b>
+      ${receipt_id}
+    </p>
 
-    <br><br>
+    <p>
+      <b>Date:</b>
+      ${new Date().toLocaleString()}
+    </p>
 
-    <b>Items:</b><br>
+    <hr>
 
-    ${itemsHtml}
+    <p>
+      <b>Customer:</b>
+      ${customer_name}
+    </p>
 
-    <br><br>
+    <p>
+      <b>Store:</b>
+      ${store_name}
+    </p>
 
-    <b>Total:</b>
-    ₱${total.toLocaleString()}
+    <p>
+      <b>Phone:</b>
+      ${cell_number}
+    </p>
+
+    <p>
+      <b>Address:</b>
+      ${address}
+    </p>
+
+    <hr>
+
+    <table style="
+      width:100%;
+      border-collapse:collapse;
+    ">
+
+      <thead>
+
+        <tr style="background:#f3f4f6;">
+
+          <th style="padding:8px;text-align:left;">
+            Item
+          </th>
+
+          <th style="padding:8px;text-align:center;">
+            Qty
+          </th>
+
+          <th style="padding:8px;text-align:right;">
+            Price
+          </th>
+
+          <th style="padding:8px;text-align:right;">
+            Subtotal
+          </th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        ${rows}
+
+      </tbody>
+
+    </table>
+
+    <hr>
+
+    <h2 style="
+      text-align:right;
+      color:#16a34a;
+    ">
+      TOTAL:
+      ₱${total.toLocaleString()}
+    </h2>
 
   `;
+
+  document.getElementById("receiptContent").innerHTML = html;
 
   document.getElementById("receiptModal").style.display = "flex";
 
 }
+
+/* =========================================
+   CLOSE RECEIPT
+========================================= */
 
 function closeReceipt(){
 
@@ -712,4 +872,5 @@ loadProducts();
 </script>
 
 </body>
+
 </html>
