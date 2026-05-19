@@ -13,6 +13,10 @@
 
 <style>
 
+/* =========================================
+   GLOBAL
+========================================= */
+
 *{
   margin:0;
   padding:0;
@@ -25,7 +29,9 @@ body{
   color:white;
 }
 
-/* HEADER */
+/* =========================================
+   HEADER
+========================================= */
 
 header{
   position:sticky;
@@ -33,17 +39,104 @@ header{
   z-index:100;
   background:#111827;
   padding:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.4);
 }
+
+/* =========================================
+   TOP BANNER
+========================================= */
+
+.top-banner{
+  display:flex;
+  gap:15px;
+  align-items:stretch;
+  background:#162033;
+  padding:10px;
+  border-radius:12px;
+  margin-bottom:10px;
+}
+
+/* LEFT SIDE */
+
+.instruction-box{
+  width:260px;
+  background:#0f172a;
+  border-radius:10px;
+  padding:15px;
+  border:1px solid #1d4ed8;
+}
+
+.instruction-box h3{
+  color:#38bdf8;
+  margin-bottom:10px;
+  font-size:20px;
+}
+
+.instruction-box p{
+  color:#60a5fa;
+  line-height:1.8;
+  font-weight:bold;
+}
+
+/* CENTER */
+
+.banner-content{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.company-title{
+  text-align:center;
+  font-size:38px;
+  color:#f8d7da;
+  letter-spacing:2px;
+  margin-bottom:15px;
+  font-weight:bold;
+}
+
+/* BRAND LOGOS */
+
+.brand-row{
+  display:flex;
+  gap:15px;
+  overflow-x:auto;
+  padding-bottom:5px;
+}
+
+.brand-card{
+  min-width:180px;
+  height:95px;
+  background:white;
+  border-radius:8px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px;
+}
+
+.brand-card img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
+/* SEARCH */
 
 #search{
   width:100%;
-  padding:10px;
+  padding:12px;
   border:none;
   border-radius:8px;
   outline:none;
+  font-size:16px;
 }
 
-/* PRODUCTS */
+/* =========================================
+   PRODUCTS
+========================================= */
 
 .product-grid{
   display:grid;
@@ -59,27 +152,47 @@ header{
 }
 
 @media(max-width:768px){
-  .product-grid{
-    grid-template-columns:repeat(3,1fr);
-  }
-}
 
-@media(max-width:480px){
   .product-grid{
     grid-template-columns:repeat(2,1fr);
   }
+
+  .top-banner{
+    flex-direction:column;
+  }
+
+  .instruction-box{
+    width:100%;
+  }
+
+  .company-title{
+    font-size:24px;
+  }
+
+  .brand-card{
+    min-width:150px;
+    height:80px;
+  }
+
 }
+
+/* PRODUCT CARD */
 
 .card{
   background:white;
   color:black;
   border-radius:10px;
   overflow:hidden;
+  transition:0.2s;
+}
+
+.card:hover{
+  transform:translateY(-3px);
 }
 
 .card img{
   width:100%;
-  height:140px;
+  height:160px;
   object-fit:cover;
 }
 
@@ -87,10 +200,15 @@ header{
   padding:10px;
 }
 
+.card-body h4{
+  min-height:40px;
+}
+
 .price{
   color:#2563eb;
   font-weight:bold;
-  margin:5px 0;
+  margin:8px 0;
+  font-size:18px;
 }
 
 .add-btn{
@@ -101,16 +219,23 @@ header{
   background:#2563eb;
   color:white;
   cursor:pointer;
+  font-weight:bold;
 }
 
-/* CART BUTTON */
+.add-btn:hover{
+  background:#1d4ed8;
+}
+
+/* =========================================
+   CART BUTTON
+========================================= */
 
 .cart-fab{
   position:fixed;
   bottom:20px;
   right:20px;
-  width:60px;
-  height:60px;
+  width:65px;
+  height:65px;
   border-radius:50%;
   background:#2563eb;
   display:flex;
@@ -119,9 +244,12 @@ header{
   font-size:20px;
   cursor:pointer;
   z-index:1000;
+  box-shadow:0 4px 15px rgba(0,0,0,0.4);
 }
 
-/* CART PANEL */
+/* =========================================
+   CART PANEL
+========================================= */
 
 .cart{
   position:fixed;
@@ -167,7 +295,9 @@ input{
   outline:none;
 }
 
-/* RECEIPT */
+/* =========================================
+   RECEIPT MODAL
+========================================= */
 
 #receiptModal{
   display:none;
@@ -197,7 +327,9 @@ input{
 
 <body>
 
-<!-- RECEIPT -->
+<!-- =========================================
+     RECEIPT
+========================================= -->
 
 <div id="receiptModal">
 
@@ -215,29 +347,66 @@ input{
 
 </div>
 
-<!-- HEADER -->
+<!-- =========================================
+     HEADER
+========================================= -->
 
 <header>
 
-  <div style="
-    background:#1e293b;
-    padding:15px;
-    border-radius:10px;
-    margin-bottom:10px;
-  ">
+  <div class="top-banner">
 
-    <h3 style="color:#60a5fa;">
-      Cash On Delivery Instructions
-    </h3>
+    <!-- LEFT -->
 
-    <br>
+    <div class="instruction-box">
 
-    <p>1. Browse products and add to cart.</p>
-    <p>2. Complete customer details.</p>
-    <p>3. Click checkout.</p>
-    <p>4. Wait for confirmation call.</p>
+      <h3>COD Instructions</h3>
+
+      <p>1. Search Products</p>
+      <p>2. Complete customer details</p>
+      <p>3. Click checkout</p>
+      <p>4. Wait for confirmation call</p>
+
+    </div>
+
+    <!-- RIGHT -->
+
+    <div class="banner-content">
+
+      <h1 class="company-title">
+        DAVPUMM CORPORATION
+      </h1>
+
+      <!-- BRANDS -->
+
+      <div class="brand-row">
+
+        <div class="brand-card">
+          <img src="https://imglink.cc/cdn/OFWYZGrtct.png">
+        </div>
+
+        <div class="brand-card">
+          <img src="https://imglink.cc/cdn/szDcZSNvrF.jpg">
+        </div>
+
+        <div class="brand-card">
+          <img src="https://imglink.cc/cdn/rSwtIHthhJ.png">
+        </div>
+
+        <div class="brand-card">
+          <img src="https://imglink.cc/cdn/FFIIGp455g.png">
+        </div>
+
+        <div class="brand-card">
+          <img src="https://imglink.cc/cdn/HLxF8_Ocnt.png">
+        </div>
+
+      </div>
+
+    </div>
 
   </div>
+
+  <!-- SEARCH -->
 
   <input
     id="search"
@@ -246,11 +415,15 @@ input{
 
 </header>
 
-<!-- PRODUCTS -->
+<!-- =========================================
+     PRODUCTS
+========================================= -->
 
 <div id="products" class="product-grid"></div>
 
-<!-- CART BUTTON -->
+<!-- =========================================
+     CART BUTTON
+========================================= -->
 
 <div class="cart-fab" id="cartBtn">
 
@@ -258,7 +431,9 @@ input{
 
 </div>
 
-<!-- CART -->
+<!-- =========================================
+     CART PANEL
+========================================= -->
 
 <div class="cart" id="cartPanel" style="display:none;">
 
@@ -291,8 +466,11 @@ input{
 ========================================= */
 
 const supabaseClient = supabase.createClient(
- "https://gwqnvhbzvzfzryxxdmui.supabase.co",
+
+  "https://gwqnvhbzvzfzryxxdmui.supabase.co",
+
   "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
+
 );
 
 /* =========================================
@@ -300,6 +478,7 @@ const supabaseClient = supabase.createClient(
 ========================================= */
 
 const EDGE_FUNCTION_URL =
+
 "https://gwqnvhbzvzfzryxxdmui.supabase.co/functions/v1/send-order-email";
 
 /* =========================================
@@ -625,8 +804,6 @@ async function checkout(){
 
     }
 
-    /* TOTAL */
-
     let grandTotal = 0;
 
     cart.forEach(item => {
@@ -635,11 +812,7 @@ async function checkout(){
 
     });
 
-    /* RECEIPT ID */
-
     const receipt_id = "RCPT-" + Date.now();
-
-    /* SAVE ORDER */
 
     const orderData = {
 
@@ -669,8 +842,6 @@ async function checkout(){
 
     }
 
-    /* SAVE ITEMS */
-
     const itemsData = cart.map(item => ({
 
       order_id: orderResult.id,
@@ -699,70 +870,66 @@ async function checkout(){
 
     }
 
-   /* SEND EMAIL */
+    const emailPayload = {
 
-const emailPayload = {
+      record: {
 
-  record: {
+        receipt_id: receipt_id,
 
-    receipt_id: receipt_id,
+        customer_name: customer_name,
 
-    customer_name: customer_name,
+        store_name: store_name,
 
-    store_name: store_name,
+        address: address,
 
-    address: address,
+        cell_number: cell_number,
 
-    cell_number: cell_number,
+        total: grandTotal,
 
-    total: grandTotal,
+        created_at: new Date().toISOString(),
 
-    created_at: new Date().toISOString(),
+        items: cart.map(item => ({
 
-    items: cart.map(item => ({
+          name: item.name,
 
-      name: item.name,
+          qty: Number(item.qty),
 
-      qty: Number(item.qty),
+          price: Number(item.price)
 
-      price: Number(item.price)
+        }))
 
-    }))
+      }
 
-  }
+    };
 
-};
+    console.log("EMAIL PAYLOAD:", emailPayload);
 
-console.log("EMAIL PAYLOAD:", emailPayload);
+    const response = await fetch(
+      EDGE_FUNCTION_URL,
+      {
 
-const response = await fetch(
-  EDGE_FUNCTION_URL,
-  {
+        method: "POST",
 
-    method: "POST",
+        headers: {
 
-    headers: {
+          "Content-Type": "application/json",
 
-      "Content-Type": "application/json",
+          "Authorization":
+            "Bearer sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw",
 
-      "Authorization":
-        "Bearer sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw",
+          "apikey":
+            "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
 
-      "apikey":
-        "sb_publishable_okO0KEz-dX9jWd4f5ixtTQ_w0PZEhNw"
+        },
 
-    },
+        body: JSON.stringify(emailPayload)
 
-    body: JSON.stringify(emailPayload)
+      }
+    );
 
-  }
-);
+    const result = await response.json();
 
-const result = await response.json();
-
-console.log("EMAIL RESULT:", result);
-
-    /* SHOW RECEIPT */
+    console.log("EMAIL RESULT:", result);
 
     showReceipt(
       receipt_id,
@@ -772,8 +939,6 @@ console.log("EMAIL RESULT:", result);
       cell_number,
       cart
     );
-
-    /* CLEAR */
 
     cart = [];
 
@@ -787,9 +952,7 @@ console.log("EMAIL RESULT:", result);
 
     document.getElementById("cell_number").value = "";
 
-    alert(
-      "Order placed successfully"
-    );
+    alert("Order placed successfully");
 
   } catch(err){
 
@@ -828,34 +991,19 @@ function showReceipt(
 
       <tr>
 
-        <td style="
-          padding:8px;
-          border-bottom:1px solid #ddd;
-        ">
+        <td style="padding:8px;border-bottom:1px solid #ddd;">
           ${item.name}
         </td>
 
-        <td style="
-          padding:8px;
-          border-bottom:1px solid #ddd;
-          text-align:center;
-        ">
+        <td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">
           ${item.qty}
         </td>
 
-        <td style="
-          padding:8px;
-          border-bottom:1px solid #ddd;
-          text-align:right;
-        ">
+        <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
           ₱${Number(item.price).toLocaleString()}
         </td>
 
-        <td style="
-          padding:8px;
-          border-bottom:1px solid #ddd;
-          text-align:right;
-        ">
+        <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">
           ₱${subtotal.toLocaleString()}
         </td>
 
@@ -867,60 +1015,33 @@ function showReceipt(
 
   const html = `
 
-    <h2 style="
-      text-align:center;
-      color:#2563eb;
-    ">
+    <h2 style="text-align:center;color:#2563eb;">
       DAVPUMM MOTOR PARTS
     </h2>
 
-    <h3 style="
-      text-align:center;
-      margin-top:5px;
-    ">
+    <h3 style="text-align:center;margin-top:5px;">
       SALES RECEIPT
     </h3>
 
     <hr>
 
-    <p>
-      <b>Receipt No:</b>
-      ${receipt_id}
-    </p>
+    <p><b>Receipt No:</b> ${receipt_id}</p>
 
-    <p>
-      <b>Date:</b>
-      ${new Date().toLocaleString()}
-    </p>
+    <p><b>Date:</b> ${new Date().toLocaleString()}</p>
 
     <hr>
 
-    <p>
-      <b>Customer:</b>
-      ${customer_name}
-    </p>
+    <p><b>Customer:</b> ${customer_name}</p>
 
-    <p>
-      <b>Store:</b>
-      ${store_name}
-    </p>
+    <p><b>Store:</b> ${store_name}</p>
 
-    <p>
-      <b>Phone:</b>
-      ${cell_number}
-    </p>
+    <p><b>Phone:</b> ${cell_number}</p>
 
-    <p>
-      <b>Address:</b>
-      ${address}
-    </p>
+    <p><b>Address:</b> ${address}</p>
 
     <hr>
 
-    <table style="
-      width:100%;
-      border-collapse:collapse;
-    ">
+    <table style="width:100%;border-collapse:collapse;">
 
       <thead>
 
@@ -956,10 +1077,7 @@ function showReceipt(
 
     <hr>
 
-    <h2 style="
-      text-align:right;
-      color:#16a34a;
-    ">
+    <h2 style="text-align:right;color:#16a34a;">
 
       TOTAL:
       ₱${total.toLocaleString()}
